@@ -16,7 +16,7 @@ for tiredness in tiredness_index:
                 
                 #If not tired, and free on next sched just study
                 not_tired = tiredness < 3 
-                FoN = next == "NONE"
+                FoN = next == "NONE" or "REST"
                 if not_tired and FoN:
                     suggest = "STUDY"
 
@@ -34,6 +34,9 @@ for tiredness in tiredness_index:
                 Nn = next == "NONE"
                 if tired and Nn and Cp:
                     suggest = "REST"
+                
+                if tired and next == "REST":
+                    suggest = "REST"
 
                 #If tired, and eat or none from previous with none as next
                 tired = tiredness >= 3 
@@ -42,7 +45,17 @@ for tiredness in tiredness_index:
                 if tired and Nn and EoNfp:
                     suggest = "STUDY"
 
+                loaded = (current == "CLASS" or current == "STUDY") and (next=="CLASS" or next == "STUDY" or next=="NONE")
+                if tired and loaded:
+                    suggest = "REST"
 
+                breaked = (current == "CLASS" or current == "STUDY") and (next == "NONE" or next == "STUDY")
+                if tired and breaked:
+                    suggest = "STUDY"
+                
+                not_loaded = (current == "EAT" or current == "NONE" or current == "REST") and (next == "NONE" or next == "STUDY")
+                if tired and not_loaded: 
+                    suggest = "STUDY"
 
                 result += f"{suggest}\n"  
                 results_array.append(result)

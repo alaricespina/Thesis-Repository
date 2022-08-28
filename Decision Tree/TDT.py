@@ -5,17 +5,16 @@ from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
 import matplotlib.image as pltimg
 
-df = pandas.read_csv("IterationsForTree.csv")
+df = pandas.read_csv("Iterations.csv")
 
 print(df)
 
-actions = {"CLASS" : 0, "EAT" : 1, "NONE" : 2}
-suggestions = {"CLASS" : 0, "EAT" : 1, "REST" : 2, "STUDY": 3}
+translations = {"CLASS" : 0, "EAT" : 1, "NONE" : 2, "REST" : 3, "STUDY": 4}
 
-df["CURRENTACTION"] = df["CURRENTACTION"].map(actions)
-df["PREVIOUSACTION"] = df["PREVIOUSACTION"].map(actions) 
-df["NEXTSCHEDULE"] = df["NEXTSCHEDULE"].map(actions) 
-df["RESULT"] = df["RESULT"].map(suggestions) 
+df["CURRENTACTION"] = df["CURRENTACTION"].map(translations)
+df["PREVIOUSACTION"] = df["PREVIOUSACTION"].map(translations) 
+df["NEXTSCHEDULE"] = df["NEXTSCHEDULE"].map(translations) 
+df["RESULT"] = df["RESULT"].map(translations) 
 
 print(df)
 
