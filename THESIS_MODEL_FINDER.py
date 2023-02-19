@@ -70,13 +70,6 @@ OPTIMIZER_ARRAY = [keras.optimizers.SGD, keras.optimizers.RMSprop, keras.optimiz
                    keras.optimizers.Adagrad, keras.optimizers.Nadam,
                    keras.optimizers.Ftrl]
 
-LOSS_ARRAY = [keras.losses.BinaryCrossentropy(from_logits=True),
-              keras.losses.CategoricalCrossentropy(from_logits=True),
-              keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              keras.losses.Poisson(from_logits=True),
-              keras.losses.KLDivergence(from_logits=True)
-]
-
 LEARNING_RATES = [0.0001, 0.001, 0.01, 0.1, 1]
 
 RESULTS = []
@@ -86,47 +79,44 @@ for num_layers in range(MIN_POSSIBLE_LAYERS, MAX_POSSIBLE_LAYERS):
         for activation in ACTIVATION_ARRAY:
             for optimizer in OPTIMIZER_ARRAY:
                 for learning_rate in LEARNING_RATES:
-                    for loss in LOSS_ARRAY:
-                        #print(f"Parameters ======> L: {num_layers} | U: {num_units} | A: {activation} | O: {optimizer(learning_rate = learning_rate)} | LR: {learning_rate}")  
-                        
-                        ann_model = Sequential()
-
-                        # Flatten Layer
-                        ann_model.add(Flatten(input_shape=[11]))
-                        
-                        for i in range(num_layers):
-                            ann_model.add(Dense(num_units, activation=activation))
-
-                        # Output Layer
-                        ann_model.add(Dense(4))
-
-                        ann_model.compile(
-                            loss = loss,
-                            optimizer = optimizer(learning_rate=learning_rate),
-                            metrics=["accuracy"]
-                        )
-
-                        epochs = 100
-
-                        history = ann_model.fit(x_train_encoded, y_train_encoded, 
-                            #batch_size=batch_size, 
-                            epochs=epochs, 
-                            validation_data = (x_test_encoded, y_test_encoded),
-                            shuffle=True, verbose=0)
-                        
-                        history_df = pd.DataFrame(history.history)
-
-                        characteristic = [num_layers, 
-                                        num_units, 
-                                        str(activation).replace("<function ","").split()[0], 
-                                        str(optimizer).replace("<class 'keras.optimizers.optimizer_experimental", "").replace("'>","").split(".")[2], 
-                                        learning_rate, 
-                                        loss.name,
-                                        history_df['accuracy'].max(),
-                                        history_df['val_accuracy'].max()] 
                                         
+                    ann_model = Sequential()
 
-                        RESULTS.append(characteristic)                    
+                    # Flatten Layer
+                    ann_model.add(Flatten(input_shape=[11]))
+                    
+                    for i in range(num_layers):
+                        ann_model.add(Dense(num_units, activation=activation))
 
-RESULTS_DF = pd.DataFrame(RESULTS, columns=["Layers", "Units", "Activation", "Optimizer", "Learning Rate", "Loss Function", "Accuracy", "Val Accuracy"])
+                    # Output Layer
+                    ann_model.add(Dense(4))
+
+                    ann_model.compile(
+                        loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                        optimizer = optimizer(learning_rate=learning_rate),
+                        metrics=["accuracy"]
+                    )
+
+                    epochs = 100
+
+                    history = ann_model.fit(x_train_encoded, y_train_encoded, 
+                        #batch_size=batch_size, 
+                        epochs=epochs, 
+                        validation_data = (x_test_encoded, y_test_encoded),
+                        shuffle=True, verbose=0)
+                    
+                    history_df = pd.DataFrame(history.history)
+
+                    characteristic = [num_layers, 
+                                    num_units, 
+                                    str(activation).replace("<function ","").split()[0], 
+                                    str(optimizer).replace("<class 'keras.optimizers.optimizer_experimental", "").replace("'>","").split(".")[2], 
+                                    learning_rate, 
+                                    history_df['accuracy'].max(),
+                                    history_df['val_accuracy'].max()] 
+                        
+                    print(characteristic)
+                    RESULTS.append(characteristic)                    
+
+RESULTS_DF = pd.DataFrame(RESULTS, columns=["Layers", "Units", "Activation", "Optimizer", "Learning Rate", "Accuracy", "Val Accuracy"])
 RESULTS_DF.to_csv("BlankResults.csv")
