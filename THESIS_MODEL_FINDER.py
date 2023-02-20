@@ -4,6 +4,7 @@ import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+import os 
 
 
 from tensorflow import keras
@@ -72,14 +73,41 @@ OPTIMIZER_ARRAY = [keras.optimizers.SGD, keras.optimizers.RMSprop, keras.optimiz
 
 LEARNING_RATES = [0.0001, 0.001, 0.01, 0.1, 1]
 
-RESULTS = []
+filename = "ActualResults.csv"
+if (os.path.exists(filename)):
+    ACTUAL_RESULTS = pd.read_csv(filename)
+    print("File Exists")
+else:
+    ACTUAL_RESULTS = pd.DataFrame(columns=["Layers", "Units", "Activation", "Optimizer", "Learning Rate", "Accuracy", "Val Accuracy"])
+    print("File Does Not Exist")
+
 
 for num_layers in range(MIN_POSSIBLE_LAYERS, MAX_POSSIBLE_LAYERS):
     for num_units in range(MIN_POSSIBLE_UNITS, MAX_POSSIBLE_UNITS, STEP_POSSIBLE_UNITS):
         for activation in ACTIVATION_ARRAY:
             for optimizer in OPTIMIZER_ARRAY:
                 for learning_rate in LEARNING_RATES:
-                                        
+
+                    filter_characteristics = [
+                        num_layers, 
+                        num_units, 
+                        str(activation).replace("<function ","").split()[0], 
+                        str(optimizer).replace("<class 'keras.optimizers.optimizer_experimental", "").replace("'>","").split(".")[2], 
+                        learning_rate
+                    ]
+
+                    layer_check = (ACTUAL_RESULTS["Layers"] == filter_characteristics[0]).any() 
+                    unit_check =  (ACTUAL_RESULTS["Units"] == filter_characteristics[1]).any()
+                    activation_check = (ACTUAL_RESULTS["Activation"] == filter_characteristics[2]).any()
+                    optimizer_check = (ACTUAL_RESULTS["Optimizer"] == filter_characteristics[3]).any()
+                    lr_check = (ACTUAL_RESULTS["Learning Rate"] == filter_characteristics[4]).any()
+                    
+                    f_check = all([layer_check, unit_check, activation_check, optimizer_check, lr_check])
+
+                    if f_check:
+                        print(filter_characteristics, f_check)
+                        continue 
+
                     ann_model = Sequential()
 
                     # Flatten Layer
@@ -113,10 +141,12 @@ for num_layers in range(MIN_POSSIBLE_LAYERS, MAX_POSSIBLE_LAYERS):
                                     str(optimizer).replace("<class 'keras.optimizers.optimizer_experimental", "").replace("'>","").split(".")[2], 
                                     learning_rate, 
                                     history_df['accuracy'].max(),
-                                    history_df['val_accuracy'].max()] 
-                        
-                    print(characteristic)
-                    RESULTS.append(characteristic)                    
+                                    history_df['val_accuracy'].max()]
 
-RESULTS_DF = pd.DataFrame(RESULTS, columns=["Layers", "Units", "Activation", "Optimizer", "Learning Rate", "Accuracy", "Val Accuracy"])
-RESULTS_DF.to_csv("BlankResults.csv")
+                    print(characteristic)
+                    
+                    ACTUAL_RESULTS.loc[len(ACTUAL_RESULTS)] = characteristic
+                    ACTUAL_RESULTS.to_csv(filename, index=False)
+                                      
+
+
