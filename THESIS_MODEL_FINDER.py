@@ -73,6 +73,7 @@ OPTIMIZER_ARRAY = [keras.optimizers.SGD, keras.optimizers.RMSprop, keras.optimiz
 
 LEARNING_RATES = [0.0001, 0.001, 0.01, 0.1, 1]
 
+# Check if there is already an existing file for the results, if none will create a new dataframe
 filename = "ActualResults.csv"
 if (os.path.exists(filename)):
     ACTUAL_RESULTS = pd.read_csv(filename)
@@ -81,7 +82,7 @@ else:
     ACTUAL_RESULTS = pd.DataFrame(columns=["Layers", "Units", "Activation", "Optimizer", "Learning Rate", "Accuracy", "Val Accuracy"])
     print("File Does Not Exist")
 
-
+# Iterate through possible combinations
 for num_layers in range(MIN_POSSIBLE_LAYERS, MAX_POSSIBLE_LAYERS):
     for num_units in range(MIN_POSSIBLE_UNITS, MAX_POSSIBLE_UNITS, STEP_POSSIBLE_UNITS):
         for activation in ACTIVATION_ARRAY:
@@ -96,16 +97,15 @@ for num_layers in range(MIN_POSSIBLE_LAYERS, MAX_POSSIBLE_LAYERS):
                         learning_rate
                     ]
 
-                    layer_check = (ACTUAL_RESULTS["Layers"] == filter_characteristics[0]).any() 
-                    unit_check =  (ACTUAL_RESULTS["Units"] == filter_characteristics[1]).any()
-                    activation_check = (ACTUAL_RESULTS["Activation"] == filter_characteristics[2]).any()
-                    optimizer_check = (ACTUAL_RESULTS["Optimizer"] == filter_characteristics[3]).any()
-                    lr_check = (ACTUAL_RESULTS["Learning Rate"] == filter_characteristics[4]).any()
-                    
-                    f_check = all([layer_check, unit_check, activation_check, optimizer_check, lr_check])
+                    step1 = ACTUAL_RESULTS.loc[ACTUAL_RESULTS["Layers"] == filter_characteristics[0]]
+                    step2 = step1.loc[step1["Units"] == filter_characteristics[1]]
+                    step3 = step2.loc[step2["Activation"] == filter_characteristics[2]]
+                    step4 = step3.loc[step3["Optimizer"] == filter_characteristics[3]]
+                    step5 = step4.loc[step4["Learning Rate"] == filter_characteristics[4]]                   
+                   
 
-                    if f_check:
-                        print(filter_characteristics, f_check)
+                    if len(step5) > 0:
+                        print(filter_characteristics, "<--- Trained")
                         continue 
 
                     ann_model = Sequential()
