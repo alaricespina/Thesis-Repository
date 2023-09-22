@@ -134,7 +134,7 @@ t_s = f"""
 """
 print(t_s)
 
-Data_Length = 1000
+Data_Length = 10000
 New_Input_Vars = [generateInputs(DIFFICULTY, INPUT_MIN, INPUT_MAX) for _ in range(Data_Length)]
 New_Results = [computeGivenInputs(Constants, Con_Op, Var_Op, Var_Coeff, New_Input_Vars[x]) for x in range(Data_Length)]
 Min_Val, Max_Val = computeMinMax(Constants, Con_Op, Var_Op, Var_Coeff, INPUT_MIN, INPUT_MAX)

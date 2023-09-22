@@ -41,7 +41,7 @@ model = keras.Sequential(
     ]
 )
 
-loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+loss = keras.losses.SparseCategoricalCrossentropy()
 optim = keras.optimizers.Adam(learning_rate=0.01)
 metrics = ["accuracy"]
 
