@@ -62,6 +62,7 @@ def computeGivenInputs(con, con_op, var_op, var_coeff, input_vars):
 
     return running_sum 
 
+
 def parseEquation(con, con_op, var_op, var_coeff):
     running_string = "0"
 
