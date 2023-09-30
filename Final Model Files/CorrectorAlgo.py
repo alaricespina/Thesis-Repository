@@ -1,6 +1,8 @@
 import random 
 import numpy as np
 
+"HATDOG"
+
 random.seed(5)
 
 class Corrector():
