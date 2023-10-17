@@ -13,7 +13,7 @@ app.title("DBN Implementation on Weather Prediction using RPI")
 arial_font = ctk.CTkFont(family="Arial", size=12, weight="normal")
 arial_small_font = ctk.CTkFont(family="Arial", size=8, weight="normal")
 arial_bold_font = ctk.CTkFont(family="Arial", size=12, weight="bold")
-arial_title_font = ctk.CTkFont(family="Arial", size=20, weight="bold")
+arial_title_font = ctk.CTkFont(family="Arial", size=15, weight="bold")
 
 
 
@@ -86,7 +86,7 @@ def reload_sensor_button_clicked():
 
 reload_img = ctk.CTkImage(dark_image=Image.open("icon - refresh.png"), size=(10, 10))
 
-reload_sensor_button = ctk.CTkButton(master=app, corner_radius=0, text="REFRESH", command=reload_sensor_button_clicked, font=arial_bold_font, image=reload_img)
+reload_sensor_button = ctk.CTkButton(master=app, corner_radius=0, text="REFRESH", command=reload_sensor_button_clicked, font=arial_bold_font)
 reload_sensor_button.place(relx=0.2, rely=0.75, relwidth=0.15, relheight=0.25)
 
 app.mainloop()
