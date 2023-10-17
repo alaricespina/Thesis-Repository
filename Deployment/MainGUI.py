@@ -11,7 +11,7 @@ app.geometry(f"{WIDTH}x{HEIGHT}")
 app.title("DBN Implementation on Weather Prediction using RPI")
 
 arial_font = ctk.CTkFont(family="Arial", size=12, weight="normal")
-arial_small_font = ctk.CTkFont(family="Arial", size=5, weight="normal")
+arial_small_font = ctk.CTkFont(family="Arial", size=8, weight="normal")
 arial_bold_font = ctk.CTkFont(family="Arial", size=12, weight="bold")
 arial_title_font = ctk.CTkFont(family="Arial", size=20, weight="bold")
 
@@ -84,7 +84,7 @@ def reload_sensor_button_clicked():
     command_output_textbox.insert('end', "\n===REFRESH CLICKED===\nDHT11 not connected\nBMP180 not connected\nA3144 not connected")
     command_output_textbox.see('end')
 
-reload_img = ctk.CTkImage(dark_image=Image.open("icon - refresh.png"), size=(50, 50))
+reload_img = ctk.CTkImage(dark_image=Image.open("icon - refresh.png"), size=(10, 10))
 
 reload_sensor_button = ctk.CTkButton(master=app, corner_radius=0, text="REFRESH", command=reload_sensor_button_clicked, font=arial_bold_font, image=reload_img)
 reload_sensor_button.place(relx=0.2, rely=0.75, relwidth=0.15, relheight=0.25)
