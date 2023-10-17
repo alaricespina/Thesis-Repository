@@ -10,10 +10,10 @@ app = ctk.CTk()
 app.geometry(f"{WIDTH}x{HEIGHT}")
 app.title("DBN Implementation on Weather Prediction using RPI")
 
-arial_font = ctk.CTkFont(family="Arial", size=20, weight="normal")
-arial_small_font = ctk.CTkFont(family="Arial", size=12, weight="normal")
-arial_bold_font = ctk.CTkFont(family="Arial", size=20, weight="bold")
-arial_title_font = ctk.CTkFont(family="Arial", size=36, weight="bold")
+arial_font = ctk.CTkFont(family="Arial", size=12, weight="normal")
+arial_small_font = ctk.CTkFont(family="Arial", size=5, weight="normal")
+arial_bold_font = ctk.CTkFont(family="Arial", size=12, weight="bold")
+arial_title_font = ctk.CTkFont(family="Arial", size=20, weight="bold")
 
 
 
