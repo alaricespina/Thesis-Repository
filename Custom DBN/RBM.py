@@ -3,13 +3,17 @@ import tensorflow as tf
 class RBM:
     def __init__(self, visible_units, hidden_units):
         # Initialize weight matrix and biases
+        print(f"Gotten Dimensions: {visible_units} x {hidden_units}")
         self.W = tf.Variable(tf.random.normal([visible_units, hidden_units]))
+        print("Type of Self W", self.W.dtype)
         self.vb = tf.Variable(tf.zeros([visible_units]))
         self.hb = tf.Variable(tf.zeros([hidden_units]))
 
     def visible_to_hidden(self, v):
         # Calculate hidden activations
+        print("Shapes:" , v.shape, self.W.shape)
         h = tf.matmul(v, self.W) + self.hb
+        
         h = tf.sigmoid(h)
         return h
 

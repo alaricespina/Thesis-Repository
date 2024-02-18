@@ -1,3 +1,6 @@
+import tensorflow as tf 
+
+
 # Define LSTM layer with appropriate units
 model = tf.keras.Sequential([
   tf.keras.layers.LSTM(64, return_sequences=True, input_shape=(features.shape[1], 1)),
