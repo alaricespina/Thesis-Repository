@@ -5,8 +5,18 @@ import matplotlib.animation as animation
 import numpy as np 
 import pandas as pd 
 import random 
-# import adafruit_dht
-# import board 
+from datetime import datetime 
+
+board_connected = False 
+temp_humid_sensor = None 
+try:
+    import adafruit_dht
+    import board 
+    board_connected = True 
+    temp_humid_sensor = adafruit_dht.DHT11(board.D4)
+
+except:
+    print("Not in RPI")
 
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -42,11 +52,15 @@ class MainGUI():
         self.pressure_data = [0]
         self.corrected_pressure_data = [0]
         self.prediction_data = []
+        self.date = []
+        self.time = []
         self.data_2011 = pd.read_csv("Data/2011.csv")
         self.data_2012 = pd.read_csv("Data/2012.csv")
         self.data_2013 = pd.read_csv("Data/2013.csv")
         self.data_2014 = pd.read_csv("Data/2014.csv")
-        self.concatenated_data = pd.concat([self.data_2011, self.data_2012, self.data_2013, self.data_2014], ignore_index=True, sort=False)
+        self.data_2023 = pd.read_csv("Data/2023.csv")
+        self.data_2024 = pd.read_csv("Data/2024.csv")
+        self.concatenated_data = pd.concat([self.data_2011, self.data_2012, self.data_2013, self.data_2014, self.data_2023, self.data_2024], ignore_index=True, sort=False)
 
     def initializeGUI(self):
         self.app = ctk.CTk()
@@ -61,11 +75,24 @@ class MainGUI():
         self.arial_bold_font = ctk.CTkFont(family="Arial", size=12, weight="bold")
         self.arial_title_font = ctk.CTkFont(family="Arial", size=15, weight="bold")
 
+        self.temp_min_preview = ctk.CTkLabel(master=self.app, text="MIN: ")
+        self.temp_cur_preview = ctk.CTkLabel(master=self.app, text="CUR: ")
+        self.temp_max_preview = ctk.CTkLabel(master=self.app, text="MAX: ")
+        self.humid_min_preview = ctk.CTkLabel(master=self.app, text="MIN: ")
+        self.humid_cur_preview = ctk.CTkLabel(master=self.app, text="CUR: ")
+        self.humid_max_preview = ctk.CTkLabel(master=self.app, text="MAX: ")
+        self.pressure_min_preview = ctk.CTkLabel(master=self.app, text="MIN: ")
+        self.pressure_cur_preview = ctk.CTkLabel(master=self.app, text="CUR: ")
+        self.pressure_max_preview = ctk.CTkLabel(master=self.app, text="MAX: ")
+        self.wind_min_preview = ctk.CTkLabel(master=self.app, text="MIN: ")
+        self.wind_cur_preview = ctk.CTkLabel(master=self.app, text="CUR: ")
+        self.wind_max_preview = ctk.CTkLabel(master=self.app, text="MAX: ")
+
         self.initializeCurrentFrame(self.app)
         self.initializeFrameControls(self.app)
         self.setupAnimations()
-        
 
+        
     def clearScreen(self):
         try:
             self.deintializeCurrentFrames()
@@ -158,24 +185,39 @@ class MainGUI():
 
     # Remove Site Frame
     def deinitializeSiteFrame(self):
-        self.canvas.desroy()
         self.data_frame.place_forget()
+        self.canvas.desroy()
+        self.vsb.pack_forget()
+
+        # self.canvas.place_forget()
+        
 
     # Local Frame (Sensor Readings Frame)
     def initializeLocalFrame(self, app):
 
         def populate(frame):
-            labels = ["Date" , "Time", "Temperature", "Humidity", "Pressure", "Wind Speed"]
+            labels = ["Date" , "Time", "Temperature", "Corrected", "Humidity", "Corrected", "Pressure", "Corrected", "Wind Speed", "Corrected"]
             num_cols = len(labels)
-            num_rows = 100
+            current_snapshot = [self.date, self.time, self.temp_data, self.corrected_temp_data, self.humid_data, self.corrected_humid_data, self.pressure_data, self.corrected_pressure_data, self.wind_data, self.corrected_wind_data]
+
             frame.grid_columnconfigure(tuple(x for x in range(num_cols)), weight=1, uniform="x")
 
             for a in range(num_cols):
                 ctk.CTkLabel(master = frame, text = labels[a]).grid(row=0, column=a)
 
-            for i in range(1, num_rows):
+            for i in range(0, len(current_snapshot[0])):
+                if i < len(current_snapshot[0]) - 100:
+                    continue 
+                
                 for j in range(num_cols):
-                    ctk.CTkLabel(master = frame, text = "69.69").grid(row=i, column=j)
+                    try:
+                        if( j > 1) :
+                            ctk.CTkLabel(master = frame, text = f"{current_snapshot[j][i]:.2f}").grid(row=i+1, column=j)
+                        else:
+                            ctk.CTkLabel(master = frame, text = f"{current_snapshot[j][i]}").grid(row=i+1, column=j)
+                    except Exception as E:
+                        print("Error printing on ", i, j, E)
+                        ctk.CTkLabel(master = frame, text = " ").grid(row=i+1, column=j)
         
         
         def onFrameConfigure(canvas):
@@ -193,30 +235,42 @@ class MainGUI():
         self.temp_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.temp_preview_frame.place(relx=0, rely=0, relwidth=0.25, relheight=1)
         _ = ctk.CTkLabel(master=self.temp_preview_frame, text="TEMPERATURE", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
-        self.temp_min_preview = ctk.CTkLabel(master=self.temp_preview_frame, text="MIN: ").place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.temp_cur_preview = ctk.CTkLabel(master=self.temp_preview_frame, text="CUR: ").place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.temp_max_preview = ctk.CTkLabel(master=self.temp_preview_frame, text="MAX: ").place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.temp_min_preview = ctk.CTkLabel(master=self.temp_preview_frame, text=f"MIN: {min(self.corrected_temp_data):.2f}")
+        self.temp_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.temp_cur_preview = ctk.CTkLabel(master=self.temp_preview_frame, text=f"CUR: {self.corrected_temp_data[-1]:.2f}")
+        self.temp_cur_preview.place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.temp_max_preview = ctk.CTkLabel(master=self.temp_preview_frame, text=f"MAX: {min(self.corrected_temp_data):.2f}")
+        self.temp_max_preview.place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
         
         self.humid_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.humid_preview_frame.place(relx=0.25, rely=0, relwidth=0.25, relheight=1)
         _ = ctk.CTkLabel(master=self.humid_preview_frame, text="HUMIDITY", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
-        self.humid_min_preview = ctk.CTkLabel(master=self.humid_preview_frame, text="MIN: ").place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.humid_cur_preview = ctk.CTkLabel(master=self.humid_preview_frame, text="CUR: ").place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.humid_max_preview = ctk.CTkLabel(master=self.humid_preview_frame, text="MAX: ").place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.humid_min_preview = ctk.CTkLabel(master=self.humid_preview_frame, text=f"MIN: {min(self.corrected_humid_data):.2f}")
+        self.humid_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.humid_cur_preview = ctk.CTkLabel(master=self.humid_preview_frame, text=f"CUR: {self.corrected_humid_data[-1]:.2f}")
+        self.humid_cur_preview.place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.humid_max_preview = ctk.CTkLabel(master=self.humid_preview_frame, text=f"MAX: {max(self.corrected_humid_data):.2f}")
+        self.humid_max_preview.place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
 
         self.pressure_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.pressure_preview_frame.place(relx=0.5, rely=0, relwidth=0.25, relheight=1)
         _ = ctk.CTkLabel(master=self.pressure_preview_frame, text="PRESSURE", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
-        self.pressure_min_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text="MIN: ").place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.pressure_cur_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text="CUR: ").place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.pressure_max_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text="MAX: ").place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.pressure_min_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text=f"MIN: {min(self.corrected_pressure_data)}")
+        self.pressure_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.pressure_cur_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text=f"CUR: {self.corrected_pressure_data[-1]}")
+        self.pressure_cur_preview.place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.pressure_max_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text=f"MAX: {max(self.corrected_pressure_data)}")
+        self.pressure_max_preview.place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
 
         self.wind_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.wind_preview_frame.place(relx=0.75, rely=0, relwidth=0.25, relheight=1)
         _ = ctk.CTkLabel(master=self.wind_preview_frame, text="WIND SPEED", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
-        self.wind_min_preview = ctk.CTkLabel(master=self.wind_preview_frame, text="MIN: ").place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.wind_cur_preview = ctk.CTkLabel(master=self.wind_preview_frame, text="CUR: ").place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
-        self.wind_max_preview = ctk.CTkLabel(master=self.wind_preview_frame, text="MAX: ").place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.wind_min_preview = ctk.CTkLabel(master=self.wind_preview_frame, text=f"MIN: {min(self.corrected_wind_data):.2f}")
+        self.wind_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.wind_cur_preview = ctk.CTkLabel(master=self.wind_preview_frame, text=f"CUR: {self.corrected_wind_data[-1]:.2f}")
+        self.wind_cur_preview.place(relx=0.33, rely=0.5, relwidth=0.33, relheight=0.5)
+        self.wind_max_preview = ctk.CTkLabel(master=self.wind_preview_frame, text=f"MAX: {max(self.corrected_wind_data):.2f}")
+        self.wind_max_preview.place(relx=0.66, rely=0.5, relwidth=0.33, relheight=0.5)
 
         self.data_frame = ctk.CTkFrame(master=app, bg_color="black")
         self.data_frame.place(relx=0.05, rely=0.2, relwidth=0.9, relheight=0.65)
@@ -313,9 +367,9 @@ class MainGUI():
         temp_working = ctk.CTkImage(dark_image=Image.open("TEMPERATURE WORKING.png"), size = (w * scaling_factor, w * scaling_factor)) 
 
         self.demo_real_mode.configure(image = demo_image)
-        self.anemo_status.configure(image = anemo_demo)
-        self.temp_status.configure(image = temp_demo)
-        self.humid_status.configure(image = humid_demo)
+        self.anemo_status.configure(image = anemo_discon)
+        self.temp_status.configure(image = temp_working)
+        self.humid_status.configure(image = humid_working)
         self.bmp_status.configure(image = baro_demo)
 
         self.demo_real_mode.place(relx=0, rely=0, relwidth=0.2, relheight=1)
@@ -324,26 +378,26 @@ class MainGUI():
         self.humid_status.place(relx=0.6, rely=0, relwidth=0.2, relheight=1)
         self.bmp_status.place(relx=0.8, rely=0, relwidth=0.2, relheight=1)
         
-        self.current_time_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="#242424")
-        self.current_time_frame.place(relx=0, rely=0.70, relwidth=1.0, relheight=0.15)
+        # self.current_time_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="#242424")
+        # self.current_time_frame.place(relx=0, rely=0.70, relwidth=1.0, relheight=0.15)
 
-        self.current_time_label = ctk.CTkLabel(master = self.current_time_frame, text = "Time: ", fg_color="#242424")
-        self.current_time_label.place(relx=0, rely=0, relwidth=0.5, relheight = 0.5)
-        self.save_time_label = ctk.CTkLabel(master = self.current_time_frame, text="Save @:", fg_color="#242424")
-        self.save_time_label.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
-        self.force_save_button = ctk.CTkButton(master = self.current_time_frame, text="", fg_color="#242424")
-        self.force_save_button.place(relx=0.5, rely=0, relheight=1, relwidth=0.5)
+        # self.current_time_label = ctk.CTkLabel(master = self.current_time_frame, text = "Time: ", fg_color="#242424")
+        # self.current_time_label.place(relx=0, rely=0, relwidth=0.5, relheight = 0.5)
+        # self.save_time_label = ctk.CTkLabel(master = self.current_time_frame, text="Save @:", fg_color="#242424")
+        # self.save_time_label.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
+        # self.force_save_button = ctk.CTkButton(master = self.current_time_frame, text="", fg_color="#242424")
+        # self.force_save_button.place(relx=0.5, rely=0, relheight=1, relwidth=0.5)
 
-        w = self.force_save_button.cget("width")
-        force_save_image = ctk.CTkImage(dark_image=Image.open("diskette.png"), size = (w * 0.5, w * 0.5))
-        self.force_save_button.configure(image = force_save_image)
+        # w = self.force_save_button.cget("width")
+        # force_save_image = ctk.CTkImage(dark_image=Image.open("diskette.png"), size = (w * 0.5, w * 0.5))
+        # self.force_save_button.configure(image = force_save_image)
 
-        self.toggle_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="#242424")
-        self.toggle_frame.place(relx=0, rely=0.9, relwidth=1.0, relheight=0.1)
-        self.activate_demo = ctk.CTkButton(master = self.toggle_frame, text = "DEMO", corner_radius = 0, fg_color="#c79a00")
-        self.activate_demo.place(relx = 0, rely = 0, relwidth = 0.5, relheight = 1)
-        self.activate_real = ctk.CTkButton(master = self.toggle_frame, text = "REAL", corner_radius = 0, fg_color="#029917")
-        self.activate_real.place(relx = 0.5, rely = 0, relwidth = 0.5, relheight = 1)
+        # self.toggle_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="#242424")
+        # self.toggle_frame.place(relx=0, rely=0.9, relwidth=1.0, relheight=0.1)
+        # self.activate_demo = ctk.CTkButton(master = self.toggle_frame, text = "DEMO", corner_radius = 0, fg_color="#c79a00")
+        # self.activate_demo.place(relx = 0, rely = 0, relwidth = 0.5, relheight = 1)
+        # self.activate_real = ctk.CTkButton(master = self.toggle_frame, text = "REAL", corner_radius = 0, fg_color="#029917")
+        # self.activate_real.place(relx = 0.5, rely = 0, relwidth = 0.5, relheight = 1)
 
 
         self.temp_frame = ctk.CTkFrame(master=self.sensor_frame)
@@ -408,33 +462,110 @@ class MainGUI():
         min_widget.configure(text = f"MIN: {min_reading}")
         cur_widget.configure(text = f"NOW: {cur_reading}")
     
+    # def animate_group(self, data_length = 20):
+    #     temp_new_val = random.randint(0, 100)
+    #     humid_new_val = random.randint(0, 100)
+    #     wind_new_val = random.randint(0, 100)
+    #     pressure_new_val = random.randint(0, 100)
+
+    #     self.temp_data.append(temp_new_val)
+    #     self.humid_data.append(humid_new_val)
+    #     self.wind_data.append(wind_new_val)
+    #     self.pressure_data.append(pressure_new_val)
+
+    #     self.corrected_temp_data.append(temp_new_val * 0.75)
+    #     self.corrected_humid_data.append(humid_new_val * 0.75)
+    #     self.corrected_wind_data.append(wind_new_val * 0.75)
+    #     self.corrected_pressure_data.append(pressure_new_val * 0.75)
+
+    #     self.changeGraphData(self.temp_data, self.corrected_temp_data, self.temp_ax)
+    #     self.changeGraphData(self.humid_data, self.corrected_humid_data, self.humid_ax)
+    #     self.changeGraphData(self.wind_data, self.corrected_wind_data, self.windspeed_ax)
+    #     self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.pressure_ax)
+
+    # def changeGraphData(self, show_data, show_corrected, plot_axis, data_length = 20):
+    #     plot_data = show_data[-1 * data_length:]
+    #     plot_corrected = show_corrected[-1 * data_length:]
+    #     title = plot_axis.get_title()
+    #     plot_axis.clear()
+    #     plot_axis.set_ylim(0, 150)
+    #     plot_axis.plot(plot_data, label="Sensor")
+    #     plot_axis.plot(plot_corrected, label="Corrected")
+    #     plot_axis.legend(loc="upper left")
+    #     display_stats = f"MAX: {max(plot_data)}\nMIN: {min(plot_data)}\nCUR: {plot_data[-1]}"
+    #     ax = plt.gca()
+    #     plot_axis.text(0.7, 0.6, display_stats, horizontalalignment="right", verticalalignment="top", transform=ax.transAxes)
+    #     plot_axis.set_title(title)
+        
     def setupAnimations(self):
 
-        def animate_data(self, data_arr, corrected_data, plot_axis, data_length = 20):
+        def animate_data(self, data_arr, corrected_data, plot_axis, min_preview, cur_preview, max_preview, mode, data_length = 20):
+            
+            if (mode == "temp"):
+                if board_connected:
+                    try:
+                        new_val = temp_humid_sensor.temperature 
+                    except:
+                        new_val = random.randint(29, 35)
+                else:
+                    new_val = random.randint(29, 35)
 
-            new_val = random.randint(0, 100)
+                corrected_val = new_val * 0.8
+            elif (mode == "humid"):
+                if board_connected:
+                    try:
+                        new_val = temp_humid_sensor.humidity 
+                    except:
+                        new_val = random.randint(29, 35)
+                else:        
+                    new_val = random.randint(49, 58)
+
+                corrected_val = new_val * 0.9
+            elif (mode == "pressure"):
+                new_val = random.randint(1030, 1045)
+                corrected_val = new_val
+            elif (mode == "wind"):
+                new_val = 0
+                corrected_val = new_val
+
             data_arr.append(new_val)
-            corrected_data.append(new_val * 0.75)
+            corrected_data.append(corrected_val)
+
             show_data = data_arr[-1 * data_length:]
             show_corrected = corrected_data[-1 * data_length:]
+
             title = plot_axis.get_title()
             plot_axis.clear()
-            plot_axis.set_ylim(0, 150)
+
+            if (mode == "pressure"):
+                plot_axis.set_ylim(0, 1500)
+            else :
+                plot_axis.set_ylim(0, 150)
+
             plot_axis.plot(show_data, label="Sensor")
-            plot_axis.plot(show_corrected, label="Corrected")
+            # plot_axis.plot(show_corrected, label="Corrected")
             plot_axis.legend(loc="upper left")
             display_stats = f"MAX: {max(data_arr)}\nMIN: {min(data_arr)}\nCUR: {data_arr[-1]}"
             ax = plt.gca()
             plot_axis.text(0.7, 0.6, display_stats, horizontalalignment="right", verticalalignment="top", transform=ax.transAxes)
             plot_axis.set_title(title)
             
-            # print("Animated ")
-            # print(show_data)
+            # min_preview.configure(text=f"MAX: {max(data_arr)}") 
+            # cur_preview.configure(text=f"MIN: {min(data_arr)}")  
+            # max_preview.configure(text=f"CUR: {data_arr[-1]}")  
+            # print("Animated")
+        
+        def timeUpdate(self, date, time):
+            now = datetime.now()
+            date.append(now.strftime("%m/%d/%Y"))
+            time.append(now.strftime("%H:%M:%S"))
 
-        tempAnimation = animation.FuncAnimation(self.temp_fig, animate_data, fargs=(self.temp_data, self.corrected_temp_data, self.temp_ax), interval=1000)
-        humidAnimation = animation.FuncAnimation(self.humidity_fig, animate_data, fargs=(self.humid_data, self.corrected_humid_data, self.humid_ax), interval=1000)
-        windAnimation = animation.FuncAnimation(self.windspeed_fig, animate_data, fargs=(self.wind_data, self.corrected_wind_data, self.windspeed_ax), interval=1000)
-        pressureAnimation = animation.FuncAnimation(self.pressure_fig, animate_data, fargs=(self.pressure_data, self.corrected_pressure_data, self.pressure_ax), interval=1000)
+        timeAnimation = animation.FuncAnimation(self.temp_fig, timeUpdate, fargs=(self.date, self.time), interval=1000, cache_frame_data=False)
+        tempAnimation = animation.FuncAnimation(self.temp_fig, animate_data, fargs=(self.temp_data, self.corrected_temp_data, self.temp_ax, self.temp_min_preview, self.temp_cur_preview, self.temp_max_preview, "temp"), interval=1000, cache_frame_data=False)
+        humidAnimation = animation.FuncAnimation(self.humidity_fig, animate_data, fargs=(self.humid_data, self.corrected_humid_data, self.humid_ax, self.humid_min_preview, self.humid_cur_preview, self.humid_max_preview, "humid"), interval=1000, cache_frame_data=False)
+        windAnimation = animation.FuncAnimation(self.windspeed_fig, animate_data, fargs=(self.wind_data, self.corrected_wind_data, self.windspeed_ax, self.wind_min_preview, self.wind_cur_preview, self.wind_max_preview, "wind"), interval=1000, cache_frame_data=False)
+        pressureAnimation = animation.FuncAnimation(self.pressure_fig, animate_data, fargs=(self.pressure_data, self.corrected_pressure_data, self.pressure_ax, self.pressure_min_preview, self.pressure_cur_preview, self.pressure_max_preview, "pressure"), interval=1000, cache_frame_data=False)
+        # groupAnimation = animation.FuncAnimation(self.temp_fig, self.animate_group, fargs=(), interval=1000)
         self.app.mainloop()
 
 if __name__ == "__main__":
