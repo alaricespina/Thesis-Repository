@@ -126,7 +126,7 @@ class MainGUI():
 
     # Frame Controls on bottom of screen
     def initializeFrameControls(self, app):
-        self.button_frame = ctk.CTkFrame(master=app, fg_color="#242424")
+        self.button_frame = ctk.CTkFrame(master=app, fg_color="transparent")
         self.button_frame.place(relx=0.05, rely=0.9, relwidth=0.9, relheight=0.1)
 
         self.current_button = ctk.CTkButton(master=self.button_frame, text="Current", command=self.showCurrent, font = self.arial_bold_font)
@@ -326,11 +326,12 @@ class MainGUI():
 
         w, h = self.cloudy_indicator.cget("width"), self.cloudy_indicator.cget("height")
         print(w, h)
-
-        cloudy_image = ctk.CTkImage(dark_image=Image.open("icon - cloudy.png"), size=(w * 0.7, w * 0.7))
-        rainy_sunny_image = ctk.CTkImage(dark_image=Image.open("icon - rainy and sunny.png"), size=(w * 0.7, w * 0.7))
-        rainy_image = ctk.CTkImage(dark_image=Image.open("icon - rainy.png"), size=(w * 0.7, w * 0.7))
-        sunny_image = ctk.CTkImage(dark_image=Image.open("icon - sunny.png"), size=(w * 0.7, w * 0.7))
+        
+        weather_scaling = 0.4
+        cloudy_image = ctk.CTkImage(dark_image=Image.open("icon - cloudy.png"), size=(w * weather_scaling, w * weather_scaling))
+        rainy_sunny_image = ctk.CTkImage(dark_image=Image.open("icon - rainy and sunny.png"), size=(w * weather_scaling, w * weather_scaling))
+        rainy_image = ctk.CTkImage(dark_image=Image.open("icon - rainy.png"), size=(w * weather_scaling, w * weather_scaling))
+        sunny_image = ctk.CTkImage(dark_image=Image.open("icon - sunny.png"), size=(w * weather_scaling, w * weather_scaling))
 
         self.cloudy_indicator.configure(image = cloudy_image)
         self.rainy_indicator.configure(image = rainy_sunny_image)
@@ -349,7 +350,7 @@ class MainGUI():
 
         w, self.demo_real_mode.cget("width")
 
-        scaling_factor = 0.3
+        scaling_factor = 0.2
 
         demo_image = ctk.CTkImage(dark_image=Image.open("DEMO ICON.png"), size = (w * scaling_factor, w * scaling_factor)) 
         real_image = ctk.CTkImage(dark_image=Image.open("REAL ICON.png"), size = (w * scaling_factor, w * scaling_factor)) 
