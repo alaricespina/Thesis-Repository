@@ -35,11 +35,18 @@ Red : ff0000
 
 
 
+
+
 class MainGUI():
     def __init__(self, w = 1280, h = 720, title = "DBN Implementation on Weather Prediction using RPI"):
         self.WIDTH = w
         self.HEIGHT = h
         self.TITLE = title 
+
+        self.BMP_CONNECTED = False 
+        self.HALL_CONNECTED = False 
+        self.DHT_CONNECTED = False
+        self.DEMO_MODE = True 
 
         self.temp_data = [0]
         self.humid_data = [0]
@@ -124,100 +131,86 @@ class MainGUI():
 
     # Current (Graph Readings - with sensor corerction frame) Frame
     def initializeCurrentFrame(self, app):
+        # Title Label
         self.title_label = ctk.CTkLabel(master=app, text="Implementation of a Deep Belief Network with Sensor \nCorrection Algorithm to predict Weather on a Raspberry Pi", font=self.arial_title_font)
         self.title_label.place(relx=0, rely=0, relwidth=1.0, relheight=0.1)
 
+        # Main Frames
         self.sensor_frame = ctk.CTkFrame(master=app)
         self.prediction_frame = ctk.CTkFrame(master=app, fg_color="transparent")
         self.prediction_frame.place(relx=0.7, rely=0.15, relheight = 0.7, relwidth = 0.25)
 
+        # Weather Prediction Frame
         weather_prediction_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="red")
         weather_prediction_frame.place(relx=0, rely=0, relwidth=1.0, relheight=0.4)
     
-        cloudy_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="#242424", corner_radius=0)
-        rainy_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="#242424", corner_radius=0)
-        sunny_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="#242424", corner_radius=0)
-        rainy_and_sunny_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="#242424", corner_radius=0)
+        self.cloudy_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleCloudy)
+        self.rainy_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleRainy)
+        self.sunny_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleSunny)
+        self.rainy_and_sunny_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleRainySunny)
 
-        cloudy_indicator.place(relx=0, rely=0, relwidth=0.5, relheight=0.5)
-        rainy_indicator.place(relx=0.5, rely=0, relwidth=0.5, relheight=0.5)
-        sunny_indicator.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
-        rainy_and_sunny_indicator.place(relx=0.5, rely=0.5, relwidth=0.5, relheight=0.5)
+        self.cloudy_indicator.place(relx=0, rely=0, relwidth=0.5, relheight=0.5)
+        self.rainy_indicator.place(relx=0.5, rely=0, relwidth=0.5, relheight=0.5)
+        self.sunny_indicator.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
+        self.rainy_and_sunny_indicator.place(relx=0.5, rely=0.5, relwidth=0.5, relheight=0.5)
 
-        w = cloudy_indicator.cget("width")
+        w = self.cloudy_indicator.cget("width")
         weather_scaling = 0.4
         if (self.WII.w == -1 or self.WII.h == -1):
             self.WII.setDimensions(w * weather_scaling, w * weather_scaling)
             self.WII.makeImages()
 
-        cloudy_indicator.configure(image = self.WII.CLOUDY_INACTIVE)
-        rainy_indicator.configure(image = self.WII.RAINY_INACTIVE)
-        sunny_indicator.configure(image = self.WII.SUNNY_INACTIVE)
-        rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_INACTIVE)
+        self.cloudy_indicator.configure(image = self.WII.CLOUDY_INACTIVE)
+        self.rainy_indicator.configure(image = self.WII.RAINY_INACTIVE)
+        self.sunny_indicator.configure(image = self.WII.SUNNY_INACTIVE)
+        self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_INACTIVE)
         
+        # Mini Console Frame for Weather
+        weather_console_frame = ctk.CTkFrame(master=self.prediction_frame)
+        self.weather_textbox = ctk.CTkTextbox(master=weather_console_frame, fg_color="black", corner_radius=0)
+        weather_console_frame.place(relx=0, rely=0.45, relwidth=1.0, relheight=0.1)
+        self.weather_textbox.place(relx=0, rely=0, relwidth=1.0, relheight=1.0)
+        # self.console_textbox.see("end")
 
+        # Indicators Frame
         indicator_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="black")
-        indicator_frame.place(relx=0, rely=0.45, relwidth=1.0, relheight=0.15)
+        indicator_frame.place(relx=0, rely=0.6, relwidth=1.0, relheight=0.15)
 
-        demo_real_mode = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0)
-        anemo_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0)
-        temp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0)
-        humid_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0)
-        bmp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0)
+        self.demo_real_mode = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleDemoReal)
+        self.anemo_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleWind)
+        self.temp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleTemp)
+        self.humid_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleHumid)
+        self.bmp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.TogglePressure)
 
-        demo_real_mode.place(relx=0, rely=0, relwidth=0.2, relheight=1)
-        anemo_status.place(relx=0.2, rely=0, relwidth=0.2, relheight=1)
-        temp_status.place(relx=0.4, rely=0, relwidth=0.2, relheight=1)
-        humid_status.place(relx=0.6, rely=0, relwidth=0.2, relheight=1)
-        bmp_status.place(relx=0.8, rely=0, relwidth=0.2, relheight=1)
+        self.demo_real_mode.place(relx=0, rely=0, relwidth=0.2, relheight=1)
+        self.anemo_status.place(relx=0.2, rely=0, relwidth=0.2, relheight=1)
+        self.temp_status.place(relx=0.4, rely=0, relwidth=0.2, relheight=1)
+        self.humid_status.place(relx=0.6, rely=0, relwidth=0.2, relheight=1)
+        self.bmp_status.place(relx=0.8, rely=0, relwidth=0.2, relheight=1)
 
-        w = demo_real_mode.cget("width")
+        w = self.demo_real_mode.cget("width")
         indicator_scaling = 0.2
         if (self.II.w == -1 or self.II.h == -1):
             self.II.setDimensions(w * indicator_scaling, w * indicator_scaling)
             self.II.makeImages()
 
-        demo_real_mode.configure(image = self.II.DEMO_MODE)
-        anemo_status.configure(image = self.II.WIND_DISCON)
-        temp_status.configure(image = self.II.TEMP_DEMO)
-        humid_status.configure(image = self.II.HUMID_DEMO)
-        bmp_status.configure(image = self.II.PRESSURE_DEMO)
+        self.demo_real_mode.configure(image = self.II.DEMO_MODE)
+        self.anemo_status.configure(image = self.II.WIND_DISCON)
+        self.temp_status.configure(image = self.II.TEMP_DEMO)
+        self.humid_status.configure(image = self.II.HUMID_DEMO)
+        self.bmp_status.configure(image = self.II.PRESSURE_DEMO)
 
+        # Console Frame - For Generic Console Logs
+        generic_console_frame = ctk.CTkFrame(master=self.prediction_frame)
+        self.generic_textbox = ctk.CTkTextbox(master=generic_console_frame, fg_color="black", corner_radius=0)
+        generic_console_frame.place(relx=0, rely=0.8, relwidth=1.0, relheight=0.1)
+        self.generic_textbox.place(relx=0, rely=0, relwidth=1.0, relheight=1.0)
         
-        
-        # self.current_time_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="#242424")
-        # self.current_time_frame.place(relx=0, rely=0.70, relwidth=1.0, relheight=0.15)
-
-        # self.current_time_label = ctk.CTkLabel(master = self.current_time_frame, text = "Time: ", fg_color="#242424")
-        # self.current_time_label.place(relx=0, rely=0, relwidth=0.5, relheight = 0.5)
-        # self.save_time_label = ctk.CTkLabel(master = self.current_time_frame, text="Save @:", fg_color="#242424")
-        # self.save_time_label.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
-        # self.force_save_button = ctk.CTkButton(master = self.current_time_frame, text="", fg_color="#242424")
-        # self.force_save_button.place(relx=0.5, rely=0, relheight=1, relwidth=0.5)
-
-        # w = self.force_save_button.cget("width")
-        # force_save_image = ctk.CTkImage(dark_image=Image.open("diskette.png"), size = (w * 0.5, w * 0.5))
-        # self.force_save_button.configure(image = force_save_image)
-
-        # self.toggle_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="#242424")
-        # self.toggle_frame.place(relx=0, rely=0.9, relwidth=1.0, relheight=0.1)
-        # self.activate_demo = ctk.CTkButton(master = self.toggle_frame, text = "DEMO", corner_radius = 0, fg_color="#c79a00")
-        # self.activate_demo.place(relx = 0, rely = 0, relwidth = 0.5, relheight = 1)
-        # self.activate_real = ctk.CTkButton(master = self.toggle_frame, text = "REAL", corner_radius = 0, fg_color="#029917")
-        # self.activate_real.place(relx = 0.5, rely = 0, relwidth = 0.5, relheight = 1)
-
-        # temp_frame = ctk.CTkFrame(master=self.sensor_frame)
-        # humidity_frame = ctk.CTkFrame(master=self.sensor_frame)
-        # windspeed_frame = ctk.CTkFrame(master=self.sensor_frame)
-        # pressure_frame = ctk.CTkFrame(master=self.sensor_frame)
-
+        # Sensor Frame
         self.sensor_frame.place(relx=0.05, rely=0.15, relheight = 0.7, relwidth=0.6)
-
         self.sensor_fig, self.sensor_axs = plt.subplots(2, 2)
         plt.tight_layout()
-
         sensor_canvas = FigureCanvasTkAgg(self.sensor_fig, self.sensor_frame)
-
         sensor_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
 
         self.sensor_axs[0, 0].set_title("Temperature")
@@ -225,46 +218,110 @@ class MainGUI():
         self.sensor_axs[1, 0].set_title("Pressure")
         self.sensor_axs[1, 1].set_title("Wind Speed")
 
-        
-        # temp_frame.place(relx=0, rely=0, relwidth=0.5, relheight=0.5)       
-        # humidity_frame.place(relx=0.5, rely=0, relwidth=0.5, relheight=0.5)
-        # windspeed_frame.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
-        # pressure_frame.place(relx=0.5, rely=0.5, relwidth=0.5, relheight=0.5)
+    def insertGenericConsole(self, text, location = "end"):
+        self.generic_textbox.insert(location, "\n" + text)
+        self.generic_textbox.see(location)
 
-        # self.temp_fig = plt.Figure()
-        # self.humidity_fig = plt.Figure()
-        # self.windspeed_fig = plt.Figure()
-        # self.pressure_fig = plt.Figure()
+    def insertWeatherConsole(self, text, location = "end"):
+        self.weather_textbox.delete("0.0", "end")
+        self.weather_textbox.insert(location, text)
+        self.weather_textbox.see(location)
 
-        # plt.ylim(0, 100)
+    def clearConditions(self):
+        self.cloudy_indicator.configure(image = self.WII.CLOUDY_INACTIVE)
+        self.rainy_indicator.configure(image = self.WII.RAINY_INACTIVE)
+        self.sunny_indicator.configure(image = self.WII.SUNNY_INACTIVE)
+        self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_INACTIVE)
 
-        # temp_canvas = FigureCanvasTkAgg(self.temp_fig, temp_frame)
-        # humidity_canvas = FigureCanvasTkAgg(self.humidity_fig, humidity_frame)
-        # windspeed_canvas = FigureCanvasTkAgg(self.windspeed_fig, windspeed_frame)
-        # pressure_canvas = FigureCanvasTkAgg(self.pressure_fig, pressure_frame)
+    def ToggleCloudy(self):
+        if self.DEMO_MODE:
+            self.clearConditions()
+            self.cloudy_indicator.configure(image = self.WII.CLOUDY_ACTIVE)
+            self.insertWeatherConsole("DEMO - CLOUDY WEATHER CONDITION")
 
-        # temp_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
-        # humidity_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
-        # windspeed_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
-        # pressure_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
+    def ToggleSunny(self):
+        if self.DEMO_MODE:
+            self.clearConditions()
+            self.sunny_indicator.configure(image = self.WII.SUNNY_ACTIVE)
+            self.insertWeatherConsole("DEMO - SUNNY WEATHER CONDITION")
 
-        # self.temp_ax = self.temp_fig.add_subplot(1, 1, 1)
-        # self.humid_ax = self.humidity_fig.add_subplot(1, 1, 1)
-        # self.windspeed_ax = self.windspeed_fig.add_subplot(1, 1, 1)
-        # self.pressure_ax = self.pressure_fig.add_subplot(1, 1, 1)
+    def ToggleRainy(self):
+        if self.DEMO_MODE:
+            self.clearConditions()
+            self.rainy_indicator.configure(image = self.WII.RAINY_ACTIVE)
+            self.insertWeatherConsole("DEMO - RAINY WEATHER CONDITION") 
 
-        # self.temp_ax.set_title("Temperature")
-        # self.humid_ax.set_title("Humidity")
-        # self.pressure_ax.set_title("Pressure")
-        # self.windspeed_ax.set_title("Wind Speed")
+    def ToggleRainySunny(self):
+        if self.DEMO_MODE:
+            self.clearConditions()
+            self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_ACTIVE)
+            self.insertWeatherConsole("DEMO - RAINY & SUNNY WEATHER CONDITION") 
+
+    def ToggleDemoReal(self):
+        if self.DEMO_MODE:
+            self.DEMO_MODE = False
+            self.demo_real_mode.configure(image = self.II.REAL_MODE)
+            self.insertGenericConsole("Switching to Real Mode")
+        else:
+            self.DEMO_MODE = True
+            self.demo_real_mode.configure(image = self.II.DEMO_MODE)
+            self.insertGenericConsole("Switching to Demo Mode")
+
+    def windCheck(self):
+        self.HALL_CONNECTED = False 
+
+    def humidCheck(self):
+        self.DHT_CONNECTED = False 
+
+    def tempCheck(self):
+        self.DHT_CONNECTED = False 
+
+    def pressureCheck(self):
+        self.BMP_CONNECTED = False 
+
+    def checkSensor(self, sensorName, sensorCheckerFunction, workingImage, demoImage, disconImage, sensorWidget):
+        sensorWidget.configure(image = disconImage)
+        self.insertGenericConsole(f"Checking {sensorName} Connection")
+        self.app.after(1000, lambda: sensorWidget.configure(image = demoImage))
+        self.app.after(2000, sensorCheckerFunction)
+
+        matchSensor = (sensorName == "Anemometer" and self.HALL_CONNECTED) or ((sensorName == "Thermometer" or sensorName == "HYGROMETER") and self.DHT_CONNECTED) or (sensorName == "Barometer" and self.BMP_CONNECTED)
+        if (not matchSensor):
+            self.app.after(3000, lambda: self.insertGenericConsole(f"{sensorName} Connection Timed Out"))
+            self.app.after(4000, lambda: sensorWidget.configure(image = disconImage))
+            
+            if self.DEMO_MODE:    
+                self.app.after(5000, lambda: self.insertGenericConsole("Reverting Attempt"))
+                self.app.after(6000, lambda: sensorWidget.configure(image = demoImage))
+            
+            else:
+                self.app.after(5000, lambda: self.insertGenericConsole("Real Mode - Check Connection"))
+                self.app.after(6000, lambda: sensorWidget.configure(image = disconImage))
+            
+            self.app.after(7000, lambda: self.insertGenericConsole(f"{sensorName} - Check Finished"))
+
+        else:
+            self.app.after(3000, lambda: self.insertGenericConsole(f"{sensorName} Connected"))
+            self.app.after(4000, lambda: sensorWidget.configure(image = workingImage))
+
+    def ToggleWind(self):
+        self.checkSensor("Anemometer", self.windCheck, self.II.WIND_WORK, self.II.WIND_DEMO, self.II.WIND_DISCON, self.anemo_status)
+
+    def ToggleTemp(self):
+        self.checkSensor("Thermometer", self.tempCheck, self.II.TEMP_WORK, self.II.TEMP_DEMO, self.II.TEMP_DISCON, self.temp_status) 
+
+    def ToggleHumid(self):
+        self.checkSensor("Hygrometer", self.humidCheck, self.II.HUMID_WORK, self.II.HUMID_DEMO, self.II.HUMID_DISCON, self.humid_status)
+
+    def TogglePressure(self):
+        self.checkSensor("Barometer", self.pressureCheck, self.II.PRESSURE_WORK, self.II.PRESSURE_DEMO, self.II.PRESSURE_DISCON, self.bmp_status) 
 
     # Remove Current Frame
     def deintializeCurrentFrames(self):
         self.sensor_frame.place_forget()
         self.prediction_frame.place_forget()
         self.title_label.place_forget()
-   
-
+    
     # Frame Controls on bottom of screen
     def initializeFrameControls(self, app):
         self.button_frame = ctk.CTkFrame(master=app, fg_color="transparent")
@@ -279,6 +336,7 @@ class MainGUI():
         self.site_button = ctk.CTkButton(master=self.button_frame, text="Site", command=self.showSite, font = self.arial_bold_font)
         self.site_button.place(relx=0.68, rely=0, relwidth=0.32, relheight=1)
 
+
     # Site (PAGASA Site) Frame
     def initializeSiteFrame(self, app):
         labels = ["datetime", "tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure", "conditions"]
@@ -291,7 +349,7 @@ class MainGUI():
                 ctk.CTkLabel(master = frame, text = labels[a]).grid(row=0, column=a)
 
             for i, row in self.concatenated_data.iterrows():
-                if (i < len(self.concatenated_data) - 100):
+                if (i < len(self.concatenated_data) - self.site_data_viewing):
                     continue 
 
                 for j in range(num_cols):
@@ -344,10 +402,10 @@ class MainGUI():
             frame.grid_columnconfigure(tuple(x for x in range(num_cols)), weight=1, uniform="x")
 
             for a in range(num_cols):
-                ctk.CTkLabel(master = frame, text = labels[a]).grid(row=0, column=a)
+                ctk.CTkLabel(master = frame, text = labels[a], font = self.arial_bold_font).grid(row=0, column=a)
 
             for i in range(0, len(current_snapshot[0])):
-                if i < len(current_snapshot[0]) - 100:
+                if i < len(current_snapshot[0]) - self.local_data_viewing:
                     continue 
                 
                 for j in range(num_cols):
@@ -375,7 +433,7 @@ class MainGUI():
         
         self.temp_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.temp_preview_frame.place(relx=0, rely=0, relwidth=0.25, relheight=1)
-        _ = ctk.CTkLabel(master=self.temp_preview_frame, text="TEMPERATURE", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
+        _ = ctk.CTkLabel(master=self.temp_preview_frame, text="TEMPERATURE (C)", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
         self.temp_min_preview = ctk.CTkLabel(master=self.temp_preview_frame, text=f"MIN: {min(self.corrected_temp_data):.2f}")
         self.temp_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
         self.temp_cur_preview = ctk.CTkLabel(master=self.temp_preview_frame, text=f"CUR: {self.corrected_temp_data[-1]:.2f}")
@@ -385,7 +443,7 @@ class MainGUI():
         
         self.humid_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.humid_preview_frame.place(relx=0.25, rely=0, relwidth=0.25, relheight=1)
-        _ = ctk.CTkLabel(master=self.humid_preview_frame, text="HUMIDITY", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
+        _ = ctk.CTkLabel(master=self.humid_preview_frame, text="HUMIDITY (%)", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
         self.humid_min_preview = ctk.CTkLabel(master=self.humid_preview_frame, text=f"MIN: {min(self.corrected_humid_data):.2f}")
         self.humid_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
         self.humid_cur_preview = ctk.CTkLabel(master=self.humid_preview_frame, text=f"CUR: {self.corrected_humid_data[-1]:.2f}")
@@ -395,7 +453,7 @@ class MainGUI():
 
         self.pressure_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.pressure_preview_frame.place(relx=0.5, rely=0, relwidth=0.25, relheight=1)
-        _ = ctk.CTkLabel(master=self.pressure_preview_frame, text="PRESSURE", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
+        _ = ctk.CTkLabel(master=self.pressure_preview_frame, text="PRESSURE (mb)", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
         self.pressure_min_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text=f"MIN: {min(self.corrected_pressure_data)}")
         self.pressure_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
         self.pressure_cur_preview = ctk.CTkLabel(master=self.pressure_preview_frame, text=f"CUR: {self.corrected_pressure_data[-1]}")
@@ -405,7 +463,7 @@ class MainGUI():
 
         self.wind_preview_frame = ctk.CTkFrame(master=self.current_preview_frame)
         self.wind_preview_frame.place(relx=0.75, rely=0, relwidth=0.25, relheight=1)
-        _ = ctk.CTkLabel(master=self.wind_preview_frame, text="WIND SPEED", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
+        _ = ctk.CTkLabel(master=self.wind_preview_frame, text="WIND SPEED (kph)", anchor="center").place(relx=0, rely=0, relwidth=1, relheight=0.5)
         self.wind_min_preview = ctk.CTkLabel(master=self.wind_preview_frame, text=f"MIN: {min(self.corrected_wind_data):.2f}")
         self.wind_min_preview.place(relx=0, rely=0.5, relwidth=0.33, relheight=0.5)
         self.wind_cur_preview = ctk.CTkLabel(master=self.wind_preview_frame, text=f"CUR: {self.corrected_wind_data[-1]:.2f}")
@@ -510,96 +568,3 @@ if __name__ == "__main__":
 
     ThesisMG = MainGUI()
     ThesisMG.initializeGUI()
-
-# 
-
-# def animate_group(self, data_length = 20):
-#     temp_new_val = random.randint(0, 100)
-#     humid_new_val = random.randint(0, 100)
-#     wind_new_val = random.randint(0, 100)
-#     pressure_new_val = random.randint(0, 100)
-
-#     self.temp_data.append(temp_new_val)
-#     self.humid_data.append(humid_new_val)
-#     self.wind_data.append(wind_new_val)
-#     self.pressure_data.append(pressure_new_val)
-
-#     self.corrected_temp_data.append(temp_new_val * 0.75)
-#     self.corrected_humid_data.append(humid_new_val * 0.75)
-#     self.corrected_wind_data.append(wind_new_val * 0.75)
-#     self.corrected_pressure_data.append(pressure_new_val * 0.75)
-
-#     self.changeGraphData(self.temp_data, self.corrected_temp_data, self.temp_ax)
-#     self.changeGraphData(self.humid_data, self.corrected_humid_data, self.humid_ax)
-#     self.changeGraphData(self.wind_data, self.corrected_wind_data, self.windspeed_ax)
-#     self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.pressure_ax)
-
-# def changeGraphData(self, show_data, show_corrected, plot_axis, data_length = 20):
-#     plot_data = show_data[-1 * data_length:]
-#     plot_corrected = show_corrected[-1 * data_length:]
-#     title = plot_axis.get_title()
-#     plot_axis.clear()
-#     plot_axis.set_ylim(0, 150)
-#     plot_axis.plot(plot_data, label="Sensor")
-#     plot_axis.plot(plot_corrected, label="Corrected")
-#     plot_axis.legend(loc="upper left")
-#     display_stats = f"MAX: {max(plot_data)}\nMIN: {min(plot_data)}\nCUR: {plot_data[-1]}"
-#     ax = plt.gca()
-#     plot_axis.text(0.7, 0.6, display_stats, horizontalalignment="right", verticalalignment="top", transform=ax.transAxes)
-#     plot_axis.set_title(title)
-
-
-# def animate_data(self, data_arr, corrected_data, plot_axis, mode, data_length = 20):
-#     if (mode == "temp"):
-#         if board_connected:
-#             try:
-#                 new_val = temp_humid_sensor.temperature 
-#             except:
-#                 new_val = random.randint(29, 35)
-#         else:
-#             new_val = random.randint(29, 35)
-
-#         corrected_val = new_val * 0.8
-#     elif (mode == "humid"):
-#         if board_connected:
-#             try:
-#                 new_val = temp_humid_sensor.humidity 
-#             except:
-#                 new_val = random.randint(49, 58)
-#         else:        
-#             new_val = random.randint(49, 58)
-
-#         corrected_val = new_val * 0.9
-#     elif (mode == "pressure"):
-#         new_val = random.randint(1030, 1045)
-#         corrected_val = new_val
-#     elif (mode == "wind"):
-#         new_val = 0
-#         corrected_val = new_val
-
-#     data_arr.append(new_val)
-#     corrected_data.append(corrected_val)
-
-#     show_data = data_arr[-1 * data_length:]
-#     show_corrected = corrected_data[-1 * data_length:]
-
-#     title = plot_axis.get_title()
-#     plot_axis.clear()
-
-#     if (mode == "pressure"):
-#         plot_axis.set_ylim(0, 1500)
-#     else :
-#         plot_axis.set_ylim(0, 150)
-
-#     plot_axis.plot(show_data, label="Sensor")
-#     # plot_axis.plot(show_corrected, label="Corrected")
-#     plot_axis.legend(loc="upper left")
-#     display_stats = f"MAX: {max(data_arr)}\nMIN: {min(data_arr)}\nCUR: {data_arr[-1]}"
-#     ax = plt.gca()
-#     plot_axis.text(0.7, 0.6, display_stats, horizontalalignment="right", verticalalignment="top", transform=ax.transAxes)
-#     plot_axis.set_title(title)
-    
-#     # min_preview.configure(text=f"MAX: {max(data_arr)}") 
-#     # cur_preview.configure(text=f"MIN: {min(data_arr)}")  
-#     # max_preview.configure(text=f"CUR: {data_arr[-1]}")  
-#     # print("Animated")
