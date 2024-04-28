@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
 
-def generate_timeseries(length, trend="linear", seasonality=False, noise=0.1):
+def generate_timeseries(length, filename, trend="linear", seasonality=False, noise=0.1):
     # Create base trend
     if trend == "linear":
         base_trend = np.linspace(0, 1, length)
@@ -25,14 +25,26 @@ def generate_timeseries(length, trend="linear", seasonality=False, noise=0.1):
 
     # Create DataFrame and save
     data = pd.DataFrame({"value": timeseries})
-    data.to_csv("timeseries.csv", index=False)
+    data.to_csv(filename, index=False)
 
     return timeseries
 
 if __name__ == "__main__":
-    data = generate_timeseries(200, trend="sinusoidal", seasonality=True, noise=0.5)
-    print(data)
-    plt.figure(figsize=(10, 5))
-    plt.plot(data)
-    plt.show()
+    # NN - No Noise, MXN - Max Noise, MNN - Min Noise, MDN - Medium Noise
+    # NS - No Seasonality, WS - With Seasonality
+    # S - Sinusoidal, L - Linear
+    
+    # data = generate_timeseries(1_000, "NNNS1K_TS.csv", trend="sinusoidal", seasonality=False, noise=0.0)
+    # print(data)
+    # plt.figure(figsize=(10, 5))
+    # plt.plot(data)
+    # plt.show()
+
+    timeSeriesLength = 1_000
+    # Very Clean Data
+    generate_timeseries(timeSeriesLength, "NNNSS.csv", trend="sinusoidal", seasonality=False, noise=0.0)
+
+    # Very Noisy Data
+    generate_timeseries(timeSeriesLength, "MXNWSS.csv", trend="sinusoidal", seasonality=True, noise=0.9)
+    
 
