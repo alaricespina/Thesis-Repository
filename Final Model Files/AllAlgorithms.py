@@ -64,5 +64,36 @@ classifiers = [
     QuadraticDiscriminantAnalysis(),
 ]
 
+def makeDBNNetwork(num_layers, **kwargs):
+    # 1 Layer
+
+    current_pipe = Pipeline([
+        ('rbm1', BernoulliRBM(n_components=kwargs["L1_COMPONENTS"], n_iter = kwargs["L1_ITER"]))
+    ])
+
+    current_pipe.add
+
+X_train = []
+
 for _name, _clf in zip(names, classifiers):
+
+    # 1 - Layer Pipeline
+    for multip in [0.5, 1, 2, 4]:
+        L1_PIPELINE = Pipeline([
+            ('mmx1', MinMaxScaler()),
+            ('rbm1', BernoulliRBM(n_components = multip * X_train.shape[2], n_iter = 10)),
+            (_name, _clf)
+        ])
+
+        print(L1_PIPELINE)
+
+    # 2 - Layer Pipeline
+
+
+    # 3 - Layer Pipeline
+
+    # 4 - Layer Pipeline
+
+    # 5 - Layer Pipeline
+
     print(_name," ", _clf)
