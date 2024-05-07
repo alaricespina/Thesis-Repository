@@ -97,3 +97,51 @@ for _name, _clf in zip(names, classifiers):
     # 5 - Layer Pipeline
 
     print(_name," ", _clf)
+
+# Increasing
+        comb = []
+        for j in range(0, rbm_layer):
+            comb.append((f"mms{j}", MinMaxScaler()))
+            comb.append((f"rbm{j}", BernoulliRBM(n_components = X_train.shape[1] * (j + 1), learning_rate = 0.01, n_iter = 10, verbose = 0)))
+
+        predictor = Pipeline(comb)
+
+        if rbm_layer > 1:
+            copy_tf_X_train = predictor.fit_transform(tf_X_train)
+        else:
+            copy_tf_X_train = tf_X_train.copy()
+
+        mcp_save = ModelCheckpoint(f"{name}_Increasing_Layer_{rbm_layer}.keras", save_best_only = True, monitor = "accuracy", mode = "max")
+        current_model = tf.keras.models.clone_model(_clf)
+        current_model.compile(loss = "categorical_crossentropy", optimizer = "adam", metrics = ["accuracy"])
+        history = current_model.fit(copy_tf_X_train, tf_y_train, batch_size = BATCH_SIZE, epochs = TRAIN_EPOCHS, callbacks = [mcp_save])
+        y_pred = np.argmax(current_model.predict(tf_X_test), axis = 1)
+        accuracy = accuracy_score(y_test, y_pred) * 100
+        Results[name]["INCREASING"][rbm_layer] = {} 
+        Results[name]["INCREASING"][rbm_layer]["accuracy"] = accuracy
+        Results[name]["INCREASING"][rbm_layer]["history"] = history.history
+        print(f"{name}\tINCREASING\tLayer: {rbm_layer}\tAccuracy: {accuracy}")
+
+        # Decreasing
+        comb = []
+        for j in range(0, rbm_layer):
+            comb.append((f"mms{j}", MinMaxScaler()))
+            comb.append((f"rbm{j}", BernoulliRBM(n_components = X_train.shape[1] * rbm_layer - j, learning_rate = 0.01, n_iter = 10, verbose = 0)))
+
+        predictor = Pipeline(comb)
+
+        if rbm_layer > 1:
+            copy_tf_X_train = predictor.fit_transform(tf_X_train)
+        else:
+            copy_tf_X_train = tf_X_train.copy()
+
+        mcp_save = ModelCheckpoint(f"{name}_Decreasing_Layer_{rbm_layer}.keras", save_best_only = True, monitor = "accuracy", mode = "max")
+        current_model = tf.keras.models.clone_model(_clf)
+        current_model.compile(loss = "categorical_crossentropy", optimizer = "adam", metrics = ["accuracy"])
+        history = current_model.fit(copy_tf_X_train, tf_y_train, batch_size = BATCH_SIZE, epochs = TRAIN_EPOCHS, callbacks = [mcp_save])
+        y_pred = np.argmax(current_model.predict(tf_X_test), axis = 1)
+        accuracy = accuracy_score(y_test, y_pred) * 100
+        Results[name]["DECREASING"][rbm_layer] = {} 
+        Results[name]["DECREASING"][rbm_layer]["accuracy"] = accuracy
+        Results[name]["DECREASING"][rbm_layer]["history"] = history.history
+        print(f"{name}\tDECREASING\tLayer: {rbm_layer}\tAccuracy: {accuracy}")
