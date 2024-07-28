@@ -500,8 +500,6 @@ class MainGUI():
         # self.canvas.place_forget()
         self.vsb.pack_forget()
 
- 
-
     def get_stat_data(self, data_arr):
         return (max(data_arr), min(data_arr), data[-1])
 
