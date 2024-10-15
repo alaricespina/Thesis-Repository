@@ -135,7 +135,7 @@ class AutoRegressiveClass:
 
 if __name__ == "__main__":
     ARC = AutoRegressiveClass()
-    dataRaw = pd.read_csv("CombinedData.csv")
+    dataRaw = pd.read_csv("1989 to 2023 CombinedData.csv")
     dataRaw = dataRaw[["datetime", "temp"]]
     dataRaw.rename(columns={"datetime" : "Date", "temp" : "Temp"}, inplace=True)
     Training_Dataset, Testing_Dataset = ARC.splitData(dataRaw)
