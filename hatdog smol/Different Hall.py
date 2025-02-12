@@ -18,7 +18,7 @@ GPIO.add_event_detect(sense_pin, GPIO.BOTH, callback=detect, bouncetime=20)
 print("Ctrl C to quit")
 
 try:
-    while (True):
+    for i in range(1000):
         timedate = datetime.datetime.now().strftime("%H:%M:%S %a")
         print("System Active Check", timedate)
         time.sleep(0.5)
