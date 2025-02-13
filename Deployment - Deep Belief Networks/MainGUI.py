@@ -14,10 +14,12 @@ board_connected = False
 temp_humid_sensor = None 
 
 try:
-    import adafruit_dht
+    import Adafruit_DHT
     import board 
     board_connected = True 
-    temp_humid_sensor = adafruit_dht.DHT11(board.D4)
+    temp_humid_sensor = Adafruit_DHT.DHT11(board.D4)
+
+    print("Succesfully imported Necessary Packages in RPI")
 
 except:
     print("Not in RPI")
@@ -270,6 +272,10 @@ class MainGUI():
 
     def humidCheck(self):
         self.DHT_CONNECTED = False 
+        temp = temp_humid_sensor.temperature
+        humid = temp_humid_sensor.humidity
+        self.insertGenericConsole(f"Temperature: {temp}C")
+        self.insertGenericConsole(f"Humidity: {humid}%")
 
     def tempCheck(self):
         self.DHT_CONNECTED = False 
