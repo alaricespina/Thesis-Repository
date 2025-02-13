@@ -33,10 +33,6 @@ Yellow : ffc600
 Red : ff0000
 '''
 
-
-
-
-
 class MainGUI():
     def __init__(self, w = 1280, h = 720, title = "DBN Implementation on Weather Prediction using RPI"):
         self.WIDTH = w
@@ -219,10 +215,12 @@ class MainGUI():
         self.sensor_axs[1, 1].set_title("Wind Speed")
 
     def insertGenericConsole(self, text, location = "end"):
+        print(f"Generic Console: {text}")
         self.generic_textbox.insert(location, "\n" + text)
         self.generic_textbox.see(location)
 
     def insertWeatherConsole(self, text, location = "end"):
+        print(f"Weather Console: {text}")
         self.weather_textbox.delete("0.0", "end")
         self.weather_textbox.insert(location, text)
         self.weather_textbox.see(location)
