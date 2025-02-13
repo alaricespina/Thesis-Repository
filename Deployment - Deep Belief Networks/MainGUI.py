@@ -14,10 +14,10 @@ board_connected = False
 temp_humid_sensor = None 
 
 try:
-    import Adafruit_DHT
+    import adafruit_dht
     import board 
     board_connected = True 
-    temp_humid_sensor = Adafruit_DHT.DHT11(board.D4)
+    temp_humid_sensor = adafruit_dht.DHT11(board.D4)
 
     print("Succesfully imported Necessary Packages in RPI")
 
