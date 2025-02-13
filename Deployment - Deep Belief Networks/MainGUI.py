@@ -21,8 +21,9 @@ try:
 
     print("Succesfully imported Necessary Packages in RPI")
 
-except:
+except Exception as E:
     print("Not in RPI")
+    print("Error: ", E)
 
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
