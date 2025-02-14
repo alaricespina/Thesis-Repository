@@ -167,5 +167,7 @@ class BMP180:
         except IOError as e:
             print("I/O error({0}): {1}".format(e.errno, e.strerror))
             print("Make sure I2C is enabled and the BMP180 is connected correctly.")
+            return None 
         except KeyboardInterrupt:
             print("Program stopped by user.")
+            return None
