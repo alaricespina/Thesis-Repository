@@ -101,7 +101,7 @@ class BMP180:
 
 
     # Function to calculate the temperature in degrees Celsius
-    def calculate_temperature(ut, cal_data):
+    def calculate_temperature(self, ut, cal_data):
         X1 = ((ut - cal_data['AC6']) * cal_data['AC5']) >> 15
         X2 = (cal_data['MC'] << 11) // (X1 + cal_data['MD'])
         B5 = X1 + X2
