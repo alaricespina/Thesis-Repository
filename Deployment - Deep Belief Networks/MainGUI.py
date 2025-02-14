@@ -14,16 +14,21 @@ board_connected = False
 temp_humid_sensor = None 
 
 try:
-    import adafruit_dht
-    import board 
-    board_connected = True 
-    temp_humid_sensor = adafruit_dht.DHT11(board.D4)
+    from A3144 import A3144
+    from BMP180 import BMP180 
+    from DHT11 import DHT11 
+
+    HALL = A3144()
+    BMP = BMP180()
+    DHT = DHT11()
 
     print("Succesfully imported Necessary Packages in RPI")
 
 except Exception as E:
     print("Not in RPI")
     print("Error: ", E)
+
+
 
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
