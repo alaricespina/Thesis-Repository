@@ -1,5 +1,6 @@
 import adafruit_dht
 import board 
+import time 
 
 class DHT11:
     def __init__(self):
@@ -13,6 +14,8 @@ class DHT11:
     
 if __name__ == "__main__":
     dht11 = DHT11()
-    print("Temperature: {:.2f} °C".format(dht11.readTemperature()))
-    print("Humidity: {:.2f} %".format(dht11.readHumidity()))
-    print("Exiting.")
+    while True:
+        print("Temperature: {:.2f} °C".format(dht11.readTemperature()))
+        print("Humidity: {:.2f} %".format(dht11.readHumidity()))
+        print("Exiting.")
+        time.sleep(0.1)
