@@ -170,4 +170,9 @@ class BMP180:
             return None 
         except KeyboardInterrupt:
             print("Program stopped by user.")
-            return None
+            return None 
+
+if __name__ == "__main__":
+    bmp180 = BMP180()
+    bmp180.get_sensor_data(verbose = 1)
+    print("Exiting.")

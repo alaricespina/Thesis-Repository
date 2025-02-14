@@ -10,3 +10,9 @@ class DHT11:
     
     def readHumidity(self):
         return self.sensor.humidity
+    
+if __name__ == "__main__":
+    dht11 = DHT11()
+    print("Temperature: {:.2f} °C".format(dht11.readTemperature()))
+    print("Humidity: {:.2f} %".format(dht11.readHumidity()))
+    print("Exiting.")

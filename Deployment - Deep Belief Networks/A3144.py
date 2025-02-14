@@ -10,6 +10,20 @@ class A3144:
     def readSensor(self):
         return GPIO.input(self.sensor_pin)
 
+if __name__ == "__main__":
+    sensor = A3144()
+    while True:
+        print(sensor.readSensor())
+        time.sleep(0.1)
+
+
+
+
+
+
+
+
+
 # import time, datetime
 # import RPi.GPIO as GPIO
 # sense_pin = 15
