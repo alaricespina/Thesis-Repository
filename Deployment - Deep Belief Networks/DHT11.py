@@ -8,22 +8,24 @@ class DHT11:
         self.last_temp = 0
         self.last_humidity = 0
     
-    def readTemperature(self):
+    def readTemperature(self, verbose = 0):
         try:
             self.last_temp = self.sensor.temperature
             return self.sensor.temperature
         except Exception as E:
-            print("Error reading temperature: ", E)
-            print("Returning Previous Temperature")
+            if verbose:
+                print("Error reading temperature: ", E)
+                print("Returning Previous Temperature")
             return self.last_temp
     
-    def readHumidity(self):
+    def readHumidity(self, verbose = 0):
         try:
             self.last_humidity = self.sensor.humidity
             return self.sensor.humidity
         except Exception as E:
-            print("Error reading humidity: ", E)
-            print("Returning Previous Humidity")
+            if verbose:
+                print("Error reading humidity: ", E)
+                print("Returning Previous Humidity")
             return self.last_humidity
         
     
