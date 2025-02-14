@@ -11,6 +11,7 @@ class A3144:
         return GPIO.input(self.sensor_pin)
 
 if __name__ == "__main__":
+    GPIO.setmode(GPIO.BOARD)
     sensor = A3144()
     while True:
         print(sensor.readSensor())
