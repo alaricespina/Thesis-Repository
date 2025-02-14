@@ -76,9 +76,9 @@ class BMP180:
         cal_data['MD']  = self.read_2_bytes(CAL_MD)
 
         # Print calibration data for inspection
-        print("Calibration Data:")
-        for key, value in cal_data.items():
-            print(f"  {key}: {value}")
+        # print("Calibration Data:")
+        # for key, value in cal_data.items():
+        #     print(f"  {key}: {value}")
 
         return cal_data
 
