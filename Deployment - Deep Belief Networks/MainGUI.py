@@ -17,8 +17,8 @@ try:
     from A3144 import A3144
     from BMP180 import BMP180 
     from DHT11 import DHT11 
-    import RPi.GPIO as GPIO 
-    GPIO.setmode(GPIO.BOARD)
+    # import RPi.GPIO as GPIO 
+    # GPIO.setmode(GPIO.BOARD)
     HALL = A3144()
     BMP = BMP180()
     DHT = DHT11()
@@ -511,7 +511,7 @@ class MainGUI():
         self.vsb.pack_forget()
 
     def get_stat_data(self, data_arr):
-        return (max(data_arr), min(data_arr), data[-1])
+        return (max(data_arr), min(data_arr), data_arr[-1])
 
     def append_sensor_data(self, data_arr):
         return 0
@@ -525,10 +525,11 @@ class MainGUI():
         
     
     def animate_group(self, frame):
-        temp_new_val = random.randint(29, 35)
-        humid_new_val = random.randint(49, 58)
+        global DHT, BMP, HALL 
+        temp_new_val = DHT.readTemperature()
+        humid_new_val = DHT.readHumidity()
         wind_new_val = random.randint(0, 0)
-        pressure_new_val = random.randint(1030, 1045)
+        pressure_new_val = BMP.readPressure()
 
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))

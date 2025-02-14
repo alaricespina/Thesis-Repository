@@ -3,7 +3,7 @@ import board
 
 class DHT11:
     def __init__(self):
-        self.sensor = adafruit_dht.DHT11(board.D4)
+        self.sensor = adafruit_dht.DHT11(board.D4, use_pulseio=False)
     
     def readTemperature(self):
         return self.sensor.temperature

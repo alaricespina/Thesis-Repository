@@ -171,6 +171,22 @@ class BMP180:
         except KeyboardInterrupt:
             print("Program stopped by user.")
             return None 
+    
+    def readPressure(self):
+        calibration_data = self.read_calibration_data()
+        ut = self.read_raw_temperature()
+        up = self.read_raw_pressure()
+        x1 = ((ut - int(calibration_data['AC6'])) * int(calibration_data['AC5'])) >> 15
+        x2 = (int(calibration_data['MC']) << 11) // (x1 + int(calibration_data['MD']))
+        b5 = x1 + x2
+        pressure = self.calculate_pressure(up, calibration_data, b5)
+        return pressure
+
+    def readTemperature(self):
+        calibration_data = self.read_calibration_data()
+        ut = self.read_raw_temperature()
+        temperature = self.calculate_temperature(ut, calibration_data)
+        return temperature
 
 if __name__ == "__main__":
     bmp180 = BMP180()
