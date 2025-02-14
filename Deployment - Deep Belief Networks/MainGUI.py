@@ -526,7 +526,7 @@ class MainGUI():
     
     def animate_group(self, frame):
         global DHT, BMP, HALL 
-        temp_new_val = DHT.readTemperature()
+        temp_new_val = DHT.readTemperature() 
         humid_new_val = DHT.readHumidity()
         wind_new_val = random.randint(0, 0)
         pressure_new_val = BMP.readPressure() * -1 / 1000
@@ -535,6 +535,9 @@ class MainGUI():
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
         self.time.append(now.strftime("%H:%M:%S"))
+
+        temp_new_val = temp_new_val if temp_new_val != None else 0
+        humid_new_val = humid_new_val if humid_new_val != None else 0
 
 
         self.temp_data.append(temp_new_val)
