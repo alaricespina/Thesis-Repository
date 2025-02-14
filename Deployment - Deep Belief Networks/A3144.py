@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 class A3144:
     def __init__(self):        
         self.sensor_pin = 15 
-        GPIO.setmode(GPIO.BOARD)
+        # GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.sensor_pin, GPIO.IN)
 
     def readSensor(self):

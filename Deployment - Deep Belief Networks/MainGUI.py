@@ -17,8 +17,9 @@ try:
     from A3144 import A3144
     from BMP180 import BMP180 
     from DHT11 import DHT11 
-
-    # HALL = A3144()
+    import RPi.GPIO as GPIO 
+    GPIO.setmode(GPIO.BOARD)
+    HALL = A3144()
     BMP = BMP180()
     DHT = DHT11()
 
