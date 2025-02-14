@@ -18,14 +18,13 @@ try:
     from BMP180 import BMP180 
     from DHT11 import DHT11 
 
-    HALL = A3144()
+    # HALL = A3144()
     BMP = BMP180()
     DHT = DHT11()
 
     print("Succesfully imported Necessary Packages in RPI")
 
 except Exception as E:
-    print("Not in RPI")
     print("Error: ", E)
 
 
