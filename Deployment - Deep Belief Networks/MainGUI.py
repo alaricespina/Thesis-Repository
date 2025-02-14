@@ -529,8 +529,8 @@ class MainGUI():
         temp_new_val = DHT.readTemperature()
         humid_new_val = DHT.readHumidity()
         wind_new_val = random.randint(0, 0)
-        pressure_new_val = BMP.readPressure()
-        print(f"Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}Pa")
+        pressure_new_val = BMP.readPressure() * -1 / 1000
+        print(f"Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}KPa")
 
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
