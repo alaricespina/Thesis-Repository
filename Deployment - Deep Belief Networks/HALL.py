@@ -3,9 +3,9 @@ import RPi.GPIO as GPIO
 
 class HALL_EFFECT:
     def __init__(self):        
-        self.left_sensor_pin = 15 
-        self.right_sensor_pin = 13
-        # GPIO.setmode(GPIO.BOARD)
+        self.left_sensor_pin = 27
+        self.right_sensor_pin = 22
+        # GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.left_sensor_pin, GPIO.IN)
         GPIO.setup(self.right_sensor_pin, GPIO.IN)
         self.left_sensor_value = 0
