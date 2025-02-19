@@ -553,7 +553,7 @@ class MainGUI():
         self.changeGraphData(self.temp_data, self.corrected_temp_data, self.sensor_axs[0, 0], 0, 100)
         self.changeGraphData(self.humid_data, self.corrected_humid_data, self.sensor_axs[0, 1], 0, 100)
         self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.sensor_axs[1, 0], 0, 1500)
-        self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 60)
+        self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 15)
     
     def changeGraphData(self, show_data, show_corrected, plot_axis, lower_limit = 0, higher_limit = 150, data_length = 20):
         plot_data = show_data[-1 * data_length:]
