@@ -16,6 +16,8 @@ class HALL:
         self.right_sensor_value = 0
         self.last_left_sensor_value = 0
         self.last_right_sensor_value = 0
+        self.left_speed = 0
+        self.right_speed = 0 
 
     def readRawLeftSensor(self):
         return GPIO.input(self.left_sensor_pin)
@@ -27,10 +29,19 @@ class HALL:
         self.left_sensor_value = self.readRawLeftSensor()
         # self.right_sensor_value = self.readRawRightSensor()
 
+        # if self.left_sensor_value == GPIO.LOW and self.last_left_sensor_value == GPIO.HIGH:
+        #     current_time = time.time()
+        #     self.left_rotation_time = (current_time - self.left_last_time)
+        #     self.left_last_time = current_time
+        
+        # self.last_left_sensor_value = self.left_sensor_value
+
         if self.left_sensor_value == GPIO.LOW and self.last_left_sensor_value == GPIO.HIGH:
-            current_time = time.time()
-            self.left_rotation_time = (current_time - self.left_last_time)
-            self.left_last_time = current_time
+            self.left_speed += 1
+        else:
+            if self.left_speed > 0:
+                self.left_speed -= 0.01
+            
         
         self.last_left_sensor_value = self.left_sensor_value
         
