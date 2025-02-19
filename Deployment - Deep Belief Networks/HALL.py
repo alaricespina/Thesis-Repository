@@ -46,7 +46,7 @@ class HALL:
                 self.last_p += 1
 
             if self.left_speed < 0:
-                self.last_speed = 0
+                self.left_speed = 0
             
         
         self.last_left_sensor_value = self.left_sensor_value
