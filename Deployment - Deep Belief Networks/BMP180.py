@@ -105,44 +105,36 @@ class BMP180:
 
     # Function to calculate the temperature in degrees Celsius
     def calculate_temperature(self, ut, cal_data):
-        try:
-            X1 = ((ut - cal_data['AC6']) * cal_data['AC5']) >> 15
-            X2 = (cal_data['MC'] << 11) // (X1 + cal_data['MD'])
-            B5 = X1 + X2
-            T = (B5 + 8) >> 4
-            self.LAST_TEMP = T / 10.0
-            return T / 10.0
-        except:
-            return self.LAST_TEMP
+        X1 = ((ut - cal_data['AC6']) * cal_data['AC5']) >> 15
+        X2 = (cal_data['MC'] << 11) // (X1 + cal_data['MD'])
+        B5 = X1 + X2
+        T = (B5 + 8) >> 4
+        return T / 10.0
 
     # Function to calculate the pressure in Pascals
     def calculate_pressure(self, up, cal_data, b5):
-        try:
-            B6 = b5 - 4000
-            X1 = (cal_data['B2'] * (B6 * B6) // 2**12) >> 11
-            X2 = (cal_data['AC2'] * B6) >> 11
-            X3 = X1 + X2
-            B3 = (((cal_data['AC1'] * 4 + X3) << self.OSS) + 2) // 4
-            X1 = (cal_data['AC3'] * B6) >> 13
-            X2 = (cal_data['B1'] * (B6 * B6) // 2**12) >> 16
-            X3 = ((X1 + X2) + 2) >> 2
-            B4 = (cal_data['AC4'] * (X3 + 32768)) >> 15
-            B7 = (up - B3) * (50000 >> self.OSS)
+        B6 = b5 - 4000
+        X1 = (cal_data['B2'] * (B6 * B6) // 2**12) >> 11
+        X2 = (cal_data['AC2'] * B6) >> 11
+        X3 = X1 + X2
+        B3 = (((cal_data['AC1'] * 4 + X3) << self.OSS) + 2) // 4
+        X1 = (cal_data['AC3'] * B6) >> 13
+        X2 = (cal_data['B1'] * (B6 * B6) // 2**12) >> 16
+        X3 = ((X1 + X2) + 2) >> 2
+        B4 = (cal_data['AC4'] * (X3 + 32768)) >> 15
+        B7 = (up - B3) * (50000 >> self.OSS)
 
-            if B7 < 0x80000000:
-                p = (B7 * 2) // B4
-            else:
-                p = (B7 // B4) * 2
+        if B7 < 0x80000000:
+            p = (B7 * 2) // B4
+        else:
+            p = (B7 // B4) * 2
 
-            X1 = (p >> 8) * (p >> 8)
-            X1 = (X1 * 3038) >> 16
-            X2 = (-7357 * p) >> 16
+        X1 = (p >> 8) * (p >> 8)
+        X1 = (X1 * 3038) >> 16
+        X2 = (-7357 * p) >> 16
 
-            p = p + ((X1 + X2 + 3791) >> 4)
-            self.LAST_PRESSURE = p
-            return p
-        except:
-            return self.LAST_PRESSURE
+        p = p + ((X1 + X2 + 3791) >> 4)
+        return p
     
     def get_sensor_data(self, verbose = 0):
         # Main program
@@ -184,20 +176,28 @@ class BMP180:
             return None 
     
     def readPressure(self):
-        calibration_data = self.read_calibration_data()
-        ut = self.read_raw_temperature()
-        up = self.read_raw_pressure()
-        x1 = ((ut - int(calibration_data['AC6'])) * int(calibration_data['AC5'])) >> 15
-        x2 = (int(calibration_data['MC']) << 11) // (x1 + int(calibration_data['MD']))
-        b5 = x1 + x2
-        pressure = self.calculate_pressure(up, calibration_data, b5)
-        return pressure
+        try:
+            calibration_data = self.read_calibration_data()
+            ut = self.read_raw_temperature()
+            up = self.read_raw_pressure()
+            x1 = ((ut - int(calibration_data['AC6'])) * int(calibration_data['AC5'])) >> 15
+            x2 = (int(calibration_data['MC']) << 11) // (x1 + int(calibration_data['MD']))
+            b5 = x1 + x2
+            pressure = self.calculate_pressure(up, calibration_data, b5)
+            self.LAST_PRESSURE = pressure
+            return pressure
+        except:
+            return self.LAST_PRESSURE
 
     def readTemperature(self):
-        calibration_data = self.read_calibration_data()
-        ut = self.read_raw_temperature()
-        temperature = self.calculate_temperature(ut, calibration_data)
-        return temperature
+        try:
+            calibration_data = self.read_calibration_data()
+            ut = self.read_raw_temperature()
+            temperature = self.calculate_temperature(ut, calibration_data)
+            self.LAST_TEMP = temperature
+            return temperature
+        except:
+            return self.LAST_TEMP
 
 if __name__ == "__main__":
     bmp180 = BMP180()
