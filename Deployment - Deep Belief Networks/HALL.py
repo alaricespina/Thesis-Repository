@@ -28,7 +28,7 @@ class HALL_EFFECT:
         self.right_sensor_value = self.readRawRightSensor()
 
         if self.left_sensor_value == GPIO.LOW and self.last_left_sensor_value == GPIO.HIGH:
-            self.left_speed += 5
+            self.left_speed += 10
             self.left_last_p = 0
         else:
             if self.left_speed > 0:
@@ -41,7 +41,7 @@ class HALL_EFFECT:
         self.last_left_sensor_value = self.left_sensor_value
 
         if self.right_sensor_value == GPIO.LOW and self.last_right_sensor_value == GPIO.HIGH:
-            self.right_speed += 5
+            self.right_speed += 10
             self.right_last_p = 0
         else:
             if self.right_speed > 0:
