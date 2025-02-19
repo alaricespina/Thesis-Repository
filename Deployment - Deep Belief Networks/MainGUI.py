@@ -14,12 +14,12 @@ board_connected = False
 temp_humid_sensor = None 
 
 try:
-    from A3144 import A3144
+    from HALL import HALL_EFFECT
     from BMP180 import BMP180 
     from DHT11 import DHT11 
     # import RPi.GPIO as GPIO 
     # GPIO.setmode(GPIO.BOARD)
-    HALL = A3144()
+    HALL = HALL_EFFECT()
     BMP = BMP180()
     DHT = DHT11()
 
@@ -528,7 +528,7 @@ class MainGUI():
         global DHT, BMP, HALL 
         temp_new_val = DHT.readTemperature() 
         humid_new_val = DHT.readHumidity()
-        wind_new_val = random.randint(0, 0)
+        wind_new_val = HALL.readSpeed()
         pressure_new_val = BMP.readPressure() * -1 / 1000
         print(f"Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}KPa")
 
@@ -553,7 +553,7 @@ class MainGUI():
         self.changeGraphData(self.temp_data, self.corrected_temp_data, self.sensor_axs[0, 0], 0, 100)
         self.changeGraphData(self.humid_data, self.corrected_humid_data, self.sensor_axs[0, 1], 0, 100)
         self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.sensor_axs[1, 0], 0, 1500)
-        self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1])
+        self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 60)
     
     def changeGraphData(self, show_data, show_corrected, plot_axis, lower_limit = 0, higher_limit = 150, data_length = 20):
         plot_data = show_data[-1 * data_length:]

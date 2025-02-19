@@ -1,7 +1,7 @@
 import time, datetime 
 import RPi.GPIO as GPIO 
 
-class HALL:
+class HALL_EFFECT:
     def __init__(self):        
         self.left_sensor_pin = 15 
         self.right_sensor_pin = 13
