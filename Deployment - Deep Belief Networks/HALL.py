@@ -86,7 +86,7 @@ class HALL_EFFECT:
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
-    sensor = HALL()
+    sensor = HALL_EFFECT()
     while True:
         print(f"RPM: {sensor.readSpeed():.2f} L: {sensor.readRawLeftSensor()} R: {sensor.readRawRightSensor()}")
         time.sleep(0.1)
