@@ -78,7 +78,7 @@ class MainGUI():
     def initializeGUI(self):
         self.app = ctk.CTk()
         print(f"WIDTH: {self.WIDTH}, HEIGHT: {self.HEIGHT}")
-        self.app.geometry("1280x720")
+        self.app.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.app.title(self.TITLE)
 
         self.arial_font = ctk.CTkFont(family="Arial", size=12, weight="normal")
