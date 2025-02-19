@@ -12,6 +12,8 @@ class HALL:
         self.right_last_time = 0
         self.left_rotation_time = 0
         self.right_rotation_time = 0
+        self.left_sensor_value = 0
+        self.right_sensor_value = 0
 
     def readRawLeftSensor(self):
         return GPIO.input(self.left_sensor_pin)
@@ -20,14 +22,47 @@ class HALL:
         return GPIO.input(self.right_sensor_pin)
     
     def readSpeed(self):
-        pass 
+        self.left_sensor_value = self.readRawLeftSensor()
+        self.right_sensor_value = self.readRawRightSensor()
+
+        if self.left_sensor_value == GPIO.LOW:
+            current_time = time.time()
+            self.left_rotation_time = (current_time - self.left_last_time)
+            self.left_last_time = current_time
+
+        if self.right_sensor_value == GPIO.LOW:
+            current_time = time.time()
+            self.right_rotation_time = (current_time - self.right_last_time)
+            self.right_last_time = current_time
+
+        rpm1 = 0
+        rpm2 = 0
+
+        if self.left_rotation_time != 0:
+            rpm1 = 60.0 / (self.left_rotation_time * 6)
+
+        if self.right_rotation_time != 0:
+            rpm2 = 60.0 / (self.right_rotation_time * 6) 
+
+        valid_rpm_count = 0
+        total_rpm = 0
+
+        if rpm1 != 0:
+            total_rpm += rpm1
+            valid_rpm_count += 1
+
+        if rpm2 != 0:
+            total_rpm += rpm2
+            valid_rpm_count += 1
+
+        return total_rpm / valid_rpm_count if valid_rpm_count > 0 else 0
 
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
     sensor = HALL()
     while True:
-        print(f"Left Sensor: {sensor.readRawLeftSensor()} - Right Sensor: {sensor.readRawRightSensor()}")
+        print(f"RPM: {sensor.readSpeed():.2f}")
         time.sleep(0.1)
 
 
