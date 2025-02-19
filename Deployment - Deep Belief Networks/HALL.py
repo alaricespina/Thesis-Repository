@@ -62,7 +62,7 @@ if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
     sensor = HALL()
     while True:
-        print(f"RPM: {sensor.readSpeed():.2f}")
+        print(f"RPM: {sensor.readSpeed():.2f} L: {sensor.readRawLeftSensor()} R: {sensor.readRawRightSensor()}")
         time.sleep(0.1)
 
 
