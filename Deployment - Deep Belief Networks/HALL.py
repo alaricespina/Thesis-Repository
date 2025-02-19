@@ -32,7 +32,7 @@ class HALL:
             self.left_last_p = 0
         else:
             if self.left_speed > 0:
-                self.left_speed -= 0.01 * 2 * self.left_last_p
+                self.left_speed -= 0.04 * 2 * self.left_last_p
                 self.left_last_p += 1
 
             if self.left_speed < 0:
@@ -45,7 +45,7 @@ class HALL:
             self.right_last_p = 0
         else:
             if self.right_speed > 0:
-                self.right_speed -= 0.01 * 2 * self.right_last_p
+                self.right_speed -= 0.04 * 2 * self.right_last_p
                 self.right_last_p += 1
 
             if self.right_speed < 0:
