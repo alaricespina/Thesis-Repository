@@ -25,81 +25,81 @@ class HALL:
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
-    sensor = A3144()
+    sensor = HALL()
     while True:
-        print(sensor.readSensor())
+        print(f"Left Sensor: {sensor.readRawLeftSensor()} - Right Sensor: {sensor.readRawRightSensor()}")
         time.sleep(0.1)
 
 
-import RPi.GPIO as GPIO
-import time
+# import RPi.GPIO as GPIO
+# import time
 
-sensor_pin1 = 17  # GPIO pin connected to Hall sensor 1 output
-sensor_pin2 = 18  # GPIO pin connected to Hall sensor 2 output
+# sensor_pin1 = 17  # GPIO pin connected to Hall sensor 1 output
+# sensor_pin2 = 18  # GPIO pin connected to Hall sensor 2 output
 
-last_time1 = 0
-last_time2 = 0
+# last_time1 = 0
+# last_time2 = 0
 
-rotation_time1 = 0
-rotation_time2 = 0
+# rotation_time1 = 0
+# rotation_time2 = 0
 
-magnet_count = 6  # Number of magnets on the disc (CHANGE THIS!)
+# magnet_count = 6  # Number of magnets on the disc (CHANGE THIS!)
 
-GPIO.setmode(GPIO.BCM)  # Use Broadcom SOC channel numbering
-GPIO.setup(sensor_pin1, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Input with pull-up resistor
-GPIO.setup(sensor_pin2, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Input with pull-up resistor
+# GPIO.setmode(GPIO.BCM)  # Use Broadcom SOC channel numbering
+# GPIO.setup(sensor_pin1, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Input with pull-up resistor
+# GPIO.setup(sensor_pin2, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Input with pull-up resistor
 
-try:
-    while True:
-        # Read the sensor values
-        sensor_value1 = GPIO.input(sensor_pin1)
-        sensor_value2 = GPIO.input(sensor_pin2)
+# try:
+#     while True:
+#         # Read the sensor values
+#         sensor_value1 = GPIO.input(sensor_pin1)
+#         sensor_value2 = GPIO.input(sensor_pin2)
 
-        # Check for a magnet passing by sensor 1
-        if sensor_value1 == GPIO.LOW:  # Assuming LOW when magnet is detected
-            current_time = time.time()  # Get current time in seconds
-            rotation_time1 = (current_time - last_time1)
-            last_time1 = current_time
+#         # Check for a magnet passing by sensor 1
+#         if sensor_value1 == GPIO.LOW:  # Assuming LOW when magnet is detected
+#             current_time = time.time()  # Get current time in seconds
+#             rotation_time1 = (current_time - last_time1)
+#             last_time1 = current_time
 
-        # Check for a magnet passing by sensor 2
-        if sensor_value2 == GPIO.LOW:  # Assuming LOW when magnet is detected
-            current_time = time.time()  # Get current time in seconds
-            rotation_time2 = (current_time - last_time2)
-            last_time2 = current_time
+#         # Check for a magnet passing by sensor 2
+#         if sensor_value2 == GPIO.LOW:  # Assuming LOW when magnet is detected
+#             current_time = time.time()  # Get current time in seconds
+#             rotation_time2 = (current_time - last_time2)
+#             last_time2 = current_time
 
-        # Calculate RPM (Revolutions Per Minute)
-        rpm1 = 0
-        rpm2 = 0
+#         # Calculate RPM (Revolutions Per Minute)
+#         rpm1 = 0
+#         rpm2 = 0
 
-        if rotation_time1 > 0:
-            rpm1 = 60.0 / (rotation_time1 * magnet_count)  # 60 seconds in a minute
-        if rotation_time2 > 0:
-            rpm2 = 60.0 / (rotation_time2 * magnet_count)  # 60 seconds in a minute
+#         if rotation_time1 > 0:
+#             rpm1 = 60.0 / (rotation_time1 * magnet_count)  # 60 seconds in a minute
+#         if rotation_time2 > 0:
+#             rpm2 = 60.0 / (rotation_time2 * magnet_count)  # 60 seconds in a minute
 
-        # Combine RPMs using simple averaging
-        valid_rpm_count = 0
-        total_rpm = 0
-        if rpm1 > 0:
-            total_rpm += rpm1
-            valid_rpm_count += 1
-        if rpm2 > 0:
-            total_rpm += rpm2
-            valid_rpm_count += 1
+#         # Combine RPMs using simple averaging
+#         valid_rpm_count = 0
+#         total_rpm = 0
+#         if rpm1 > 0:
+#             total_rpm += rpm1
+#             valid_rpm_count += 1
+#         if rpm2 > 0:
+#             total_rpm += rpm2
+#             valid_rpm_count += 1
 
-        if valid_rpm_count > 0:
-            average_rpm = total_rpm / valid_rpm_count
-        else:
-            average_rpm = 0  # Or some other default value
+#         if valid_rpm_count > 0:
+#             average_rpm = total_rpm / valid_rpm_count
+#         else:
+#             average_rpm = 0  # Or some other default value
 
-        # Print the RPM to the console
-        print(f"RPM 1: {rpm1:.2f}  RPM 2: {rpm2:.2f}  Average RPM: {average_rpm:.2f}")
+#         # Print the RPM to the console
+#         print(f"RPM 1: {rpm1:.2f}  RPM 2: {rpm2:.2f}  Average RPM: {average_rpm:.2f}")
 
-        time.sleep(0.1)  # Small delay
+#         time.sleep(0.1)  # Small delay
 
-except KeyboardInterrupt:
-    print("Exiting...")
-finally:
-    GPIO.cleanup() 
+# except KeyboardInterrupt:
+#     print("Exiting...")
+# finally:
+#     GPIO.cleanup() 
 
 
 
