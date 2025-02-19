@@ -38,12 +38,15 @@ class HALL:
         # self.last_left_sensor_value = self.left_sensor_value
 
         if self.left_sensor_value == GPIO.LOW and self.last_left_sensor_value == GPIO.HIGH:
-            self.left_speed += 1
+            self.left_speed += 2
             self.last_p = 0
         else:
             if self.left_speed > 0:
                 self.left_speed -= 0.01 * 2 * self.last_p
                 self.last_p += 1
+
+            if self.left_speed < 0:
+                self.last_speed = 0
             
         
         self.last_left_sensor_value = self.left_sensor_value
