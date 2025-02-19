@@ -526,7 +526,7 @@ class MainGUI():
     
     def animate_group(self, frame):
         global BMP, HALL, DHT 
-        temp_new_val = BMP.readTemperature() 
+        temp_new_val = DHT.readTemperature() 
         humid_new_val = DHT.readHumidity()
         wind_new_val = HALL.readSpeed()
         pressure_new_val = BMP.readPressure() * -1 / 1000
