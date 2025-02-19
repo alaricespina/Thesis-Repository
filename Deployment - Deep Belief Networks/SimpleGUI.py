@@ -172,29 +172,29 @@ class MainGUI():
         indicator_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="black")
         indicator_frame.place(relx=0, rely=0.6, relwidth=1.0, relheight=0.15)
 
-        self.demo_real_mode = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleDemoReal)
-        self.anemo_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleWind)
-        self.temp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleTemp)
-        self.humid_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleHumid)
-        self.bmp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.TogglePressure)
+        # self.demo_real_mode = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleDemoReal)
+        # self.anemo_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleWind)
+        # self.temp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleTemp)
+        # self.humid_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleHumid)
+        # self.bmp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.TogglePressure)
 
-        self.demo_real_mode.place(relx=0, rely=0, relwidth=0.2, relheight=1)
-        self.anemo_status.place(relx=0.2, rely=0, relwidth=0.2, relheight=1)
-        self.temp_status.place(relx=0.4, rely=0, relwidth=0.2, relheight=1)
-        self.humid_status.place(relx=0.6, rely=0, relwidth=0.2, relheight=1)
-        self.bmp_status.place(relx=0.8, rely=0, relwidth=0.2, relheight=1)
+        # self.demo_real_mode.place(relx=0, rely=0, relwidth=0.2, relheight=1)
+        # self.anemo_status.place(relx=0.2, rely=0, relwidth=0.2, relheight=1)
+        # self.temp_status.place(relx=0.4, rely=0, relwidth=0.2, relheight=1)
+        # self.humid_status.place(relx=0.6, rely=0, relwidth=0.2, relheight=1)
+        # self.bmp_status.place(relx=0.8, rely=0, relwidth=0.2, relheight=1)
 
-        w = self.demo_real_mode.cget("width")
-        indicator_scaling = 0.2
-        if (self.II.w == -1 or self.II.h == -1):
-            self.II.setDimensions(w * indicator_scaling, w * indicator_scaling)
-            self.II.makeImages()
+        # w = self.demo_real_mode.cget("width")
+        # indicator_scaling = 0.2
+        # if (self.II.w == -1 or self.II.h == -1):
+        #     self.II.setDimensions(w * indicator_scaling, w * indicator_scaling)
+        #     self.II.makeImages()
 
-        self.demo_real_mode.configure(image = self.II.DEMO_MODE)
-        self.anemo_status.configure(image = self.II.WIND_DISCON)
-        self.temp_status.configure(image = self.II.TEMP_DEMO)
-        self.humid_status.configure(image = self.II.HUMID_DEMO)
-        self.bmp_status.configure(image = self.II.PRESSURE_DEMO)
+        # self.demo_real_mode.configure(image = self.II.DEMO_MODE)
+        # self.anemo_status.configure(image = self.II.WIND_DISCON)
+        # self.temp_status.configure(image = self.II.TEMP_DEMO)
+        # self.humid_status.configure(image = self.II.HUMID_DEMO)
+        # self.bmp_status.configure(image = self.II.PRESSURE_DEMO)
 
         # Console Frame - For Generic Console Logs
         generic_console_frame = ctk.CTkFrame(master=self.prediction_frame)
