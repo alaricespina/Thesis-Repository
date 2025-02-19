@@ -199,7 +199,7 @@ class MainGUI():
         # Console Frame - For Generic Console Logs
         generic_console_frame = ctk.CTkFrame(master=self.prediction_frame)
         self.generic_textbox = ctk.CTkTextbox(master=generic_console_frame, fg_color="black", corner_radius=0)
-        generic_console_frame.place(relx=0, rely=0.8, relwidth=1.0, relheight=0.4)
+        generic_console_frame.place(relx=0, rely=0.6, relwidth=1.0, relheight=0.4)
         self.generic_textbox.place(relx=0, rely=0, relwidth=1.0, relheight=1.0)
         
         # Sensor Frame
