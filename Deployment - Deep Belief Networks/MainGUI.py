@@ -528,7 +528,7 @@ class MainGUI():
         global BMP, HALL, DHT 
         temp_new_val = BMP.readTemperature() 
         humid_new_val = DHT.readHumidity()
-        wind_new_val = HALL.readRawLeftSensor()
+        wind_new_val = HALL.readSpeed()
         pressure_new_val = BMP.readPressure() * -1 / 1000
         
         now = datetime.now()
@@ -538,7 +538,7 @@ class MainGUI():
         temp_new_val = temp_new_val if temp_new_val != None else 0
         humid_new_val = humid_new_val if humid_new_val != None else 0
 
-        print(f"{datetime.now().strftime('%H:%M:%S')} - Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}KPa")
+        print(f"{datetime.now().strftime('%H:%M:%S.%f')} - Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}KPa")
 
         self.temp_data.append(temp_new_val)
         self.humid_data.append(humid_new_val)
