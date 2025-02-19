@@ -528,7 +528,7 @@ class MainGUI():
         global DHT, BMP, HALL 
         temp_new_val = DHT.readTemperature() 
         humid_new_val = DHT.readHumidity()
-        wind_new_val = HALL.readSpeed()
+        wind_new_val = HALL.readRawLeftSensor()
         pressure_new_val = BMP.readPressure() * -1 / 1000
         
         now = datetime.now()
