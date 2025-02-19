@@ -292,27 +292,27 @@ class MainGUI():
     def checkSensor(self, sensorName, sensorCheckerFunction, workingImage, demoImage, disconImage, sensorWidget):
         sensorWidget.configure(image = disconImage)
         self.insertGenericConsole(f"Checking {sensorName} Connection")
-        self.app.after(1000, lambda: sensorWidget.configure(image = demoImage))
-        self.app.after(2000, sensorCheckerFunction)
+        # self.app.after(1000, lambda: sensorWidget.configure(image = demoImage))
+        # self.app.after(2000, sensorCheckerFunction)
 
-        matchSensor = (sensorName == "Anemometer" and self.HALL_CONNECTED) or ((sensorName == "Thermometer" or sensorName == "HYGROMETER") and self.DHT_CONNECTED) or (sensorName == "Barometer" and self.BMP_CONNECTED)
-        if (not matchSensor):
-            self.app.after(3000, lambda: self.insertGenericConsole(f"{sensorName} Connection Timed Out"))
-            self.app.after(4000, lambda: sensorWidget.configure(image = disconImage))
+        # matchSensor = (sensorName == "Anemometer" and self.HALL_CONNECTED) or ((sensorName == "Thermometer" or sensorName == "HYGROMETER") and self.DHT_CONNECTED) or (sensorName == "Barometer" and self.BMP_CONNECTED)
+        # if (not matchSensor):
+        #     self.app.after(3000, lambda: self.insertGenericConsole(f"{sensorName} Connection Timed Out"))
+        #     self.app.after(4000, lambda: sensorWidget.configure(image = disconImage))
             
-            if self.DEMO_MODE:    
-                self.app.after(5000, lambda: self.insertGenericConsole("Reverting Attempt"))
-                self.app.after(6000, lambda: sensorWidget.configure(image = demoImage))
+        #     if self.DEMO_MODE:    
+        #         self.app.after(5000, lambda: self.insertGenericConsole("Reverting Attempt"))
+        #         self.app.after(6000, lambda: sensorWidget.configure(image = demoImage))
             
-            else:
-                self.app.after(5000, lambda: self.insertGenericConsole("Real Mode - Check Connection"))
-                self.app.after(6000, lambda: sensorWidget.configure(image = disconImage))
+        #     else:
+        #         self.app.after(5000, lambda: self.insertGenericConsole("Real Mode - Check Connection"))
+        #         self.app.after(6000, lambda: sensorWidget.configure(image = disconImage))
             
-            self.app.after(7000, lambda: self.insertGenericConsole(f"{sensorName} - Check Finished"))
+        #     self.app.after(7000, lambda: self.insertGenericConsole(f"{sensorName} - Check Finished"))
 
-        else:
-            self.app.after(3000, lambda: self.insertGenericConsole(f"{sensorName} Connected"))
-            self.app.after(4000, lambda: sensorWidget.configure(image = workingImage))
+        # else:
+        #     self.app.after(3000, lambda: self.insertGenericConsole(f"{sensorName} Connected"))
+        #     self.app.after(4000, lambda: sensorWidget.configure(image = workingImage))
 
     def ToggleWind(self):
         self.checkSensor("Anemometer", self.windCheck, self.II.WIND_WORK, self.II.WIND_DEMO, self.II.WIND_DISCON, self.anemo_status)
@@ -530,8 +530,7 @@ class MainGUI():
         humid_new_val = DHT.readHumidity()
         wind_new_val = HALL.readSpeed()
         pressure_new_val = BMP.readPressure() * -1 / 1000
-        print(f"Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}KPa")
-
+        
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
         self.time.append(now.strftime("%H:%M:%S"))
@@ -539,6 +538,7 @@ class MainGUI():
         temp_new_val = temp_new_val if temp_new_val != None else 0
         humid_new_val = humid_new_val if humid_new_val != None else 0
 
+        print(f"{self.date} {self.time} Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {wind_new_val}, Pressure: {pressure_new_val}KPa")
 
         self.temp_data.append(temp_new_val)
         self.humid_data.append(humid_new_val)
@@ -571,7 +571,7 @@ class MainGUI():
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        groupAnimation = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=100, cache_frame_data=False)
+        groupAnimation = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=10, cache_frame_data=False)
         self.execute()
     
     def execute(self):
