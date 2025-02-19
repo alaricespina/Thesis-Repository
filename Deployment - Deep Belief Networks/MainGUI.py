@@ -17,11 +17,11 @@ try:
     from HALL import HALL_EFFECT
     from BMP180 import BMP180 
     from DHT11 import DHT11 
-    # import RPi.GPIO as GPIO 
-    # GPIO.setmode(GPIO.BOARD)
+    import RPi.GPIO as GPIO 
+    GPIO.setmode(GPIO.BOARD)
     HALL = HALL_EFFECT()
     BMP = BMP180()
-    DHT = DHT11()
+    # DHT = DHT11()
 
     print("Succesfully imported Necessary Packages in RPI")
 
@@ -525,9 +525,9 @@ class MainGUI():
         
     
     def animate_group(self, frame):
-        global DHT, BMP, HALL 
-        temp_new_val = DHT.readTemperature() 
-        humid_new_val = DHT.readHumidity()
+        global BMP, HALL 
+        temp_new_val = BMP.readTemperature() 
+        humid_new_val = 50 #DHT.readHumidity()
         wind_new_val = HALL.readRawLeftSensor()
         pressure_new_val = BMP.readPressure() * -1 / 1000
         
