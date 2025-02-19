@@ -4,10 +4,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation 
 import numpy as np 
 import pandas as pd 
-import random 
 import os 
 from datetime import datetime 
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ImageHandler import WeatherImageIcons, IndicatorIcons
 
 board_connected = False 
@@ -28,13 +27,6 @@ try:
 except Exception as E:
     print("Error: ", E)
 
-
-
-
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure 
-from PIL import Image
-
 '''
 Green : 00ff24
 Yellow : ffc600
@@ -42,7 +34,7 @@ Red : ff0000
 '''
 
 class MainGUI():
-    def __init__(self, w = 1280, h = 720, title = "DBN Implementation on Weather Prediction using RPI"):
+    def __init__(self, w = 800, h = 480, title = "DBN Implementation on Weather Prediction using RPI"):
         self.WIDTH = w
         self.HEIGHT = h
         self.TITLE = title 
@@ -119,7 +111,7 @@ class MainGUI():
     def showCurrent(self):
         self.clearScreen()
         self.initializeCurrentFrame(self.app)
-        self.setupAnimations()
+        self.setupAnimationAndExecute()
 
     def showLocal(self):
         self.clearScreen()
@@ -263,48 +255,48 @@ class MainGUI():
             self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_ACTIVE)
             self.insertWeatherConsole("DEMO - RAINY & SUNNY WEATHER CONDITION") 
 
-    def ToggleDemoReal(self):
-        if self.DEMO_MODE:
-            self.DEMO_MODE = False
-            self.demo_real_mode.configure(image = self.II.REAL_MODE)
-            self.insertGenericConsole("Switching to Real Mode")
-        else:
-            self.DEMO_MODE = True
-            self.demo_real_mode.configure(image = self.II.DEMO_MODE)
-            self.insertGenericConsole("Switching to Demo Mode")
+    # def ToggleDemoReal(self):
+    #     if self.DEMO_MODE:
+    #         self.DEMO_MODE = False
+    #         self.demo_real_mode.configure(image = self.II.REAL_MODE)
+    #         self.insertGenericConsole("Switching to Real Mode")
+    #     else:
+    #         self.DEMO_MODE = True
+    #         self.demo_real_mode.configure(image = self.II.DEMO_MODE)
+    #         self.insertGenericConsole("Switching to Demo Mode")
 
-    def windCheck(self):
-        self.HALL_CONNECTED = False 
+    # def windCheck(self):
+    #     self.HALL_CONNECTED = False 
 
-    def humidCheck(self):
-        self.DHT_CONNECTED = False 
-        temp = temp_humid_sensor.temperature
-        humid = temp_humid_sensor.humidity
-        self.insertGenericConsole(f"Temperature: {temp}C")
-        self.insertGenericConsole(f"Humidity: {humid}%")
+    # def humidCheck(self):
+    #     self.DHT_CONNECTED = False 
+    #     temp = temp_humid_sensor.temperature
+    #     humid = temp_humid_sensor.humidity
+    #     self.insertGenericConsole(f"Temperature: {temp}C")
+    #     self.insertGenericConsole(f"Humidity: {humid}%")
 
-    def tempCheck(self):
-        self.DHT_CONNECTED = False 
+    # def tempCheck(self):
+    #     self.DHT_CONNECTED = False 
 
-    def pressureCheck(self):
-        self.BMP_CONNECTED = False 
+    # def pressureCheck(self):
+    #     self.BMP_CONNECTED = False 
 
-    def checkSensor(self, sensorName, sensorCheckerFunction, workingImage, demoImage, disconImage, sensorWidget):
-        sensorWidget.configure(image = disconImage)
-        self.insertGenericConsole(f"Checking {sensorName} Connection")
+    # def checkSensor(self, sensorName, sensorCheckerFunction, workingImage, demoImage, disconImage, sensorWidget):
+    #     sensorWidget.configure(image = disconImage)
+    #     self.insertGenericConsole(f"Checking {sensorName} Connection")
 
 
-    def ToggleWind(self):
-        self.checkSensor("Anemometer", self.windCheck, self.II.WIND_WORK, self.II.WIND_DEMO, self.II.WIND_DISCON, self.anemo_status)
+    # def ToggleWind(self):
+    #     self.checkSensor("Anemometer", self.windCheck, self.II.WIND_WORK, self.II.WIND_DEMO, self.II.WIND_DISCON, self.anemo_status)
 
-    def ToggleTemp(self):
-        self.checkSensor("Thermometer", self.tempCheck, self.II.TEMP_WORK, self.II.TEMP_DEMO, self.II.TEMP_DISCON, self.temp_status) 
+    # def ToggleTemp(self):
+    #     self.checkSensor("Thermometer", self.tempCheck, self.II.TEMP_WORK, self.II.TEMP_DEMO, self.II.TEMP_DISCON, self.temp_status) 
 
-    def ToggleHumid(self):
-        self.checkSensor("Hygrometer", self.humidCheck, self.II.HUMID_WORK, self.II.HUMID_DEMO, self.II.HUMID_DISCON, self.humid_status)
+    # def ToggleHumid(self):
+    #     self.checkSensor("Hygrometer", self.humidCheck, self.II.HUMID_WORK, self.II.HUMID_DEMO, self.II.HUMID_DISCON, self.humid_status)
 
-    def TogglePressure(self):
-        self.checkSensor("Barometer", self.pressureCheck, self.II.PRESSURE_WORK, self.II.PRESSURE_DEMO, self.II.PRESSURE_DISCON, self.bmp_status) 
+    # def TogglePressure(self):
+    #     self.checkSensor("Barometer", self.pressureCheck, self.II.PRESSURE_WORK, self.II.PRESSURE_DEMO, self.II.PRESSURE_DISCON, self.bmp_status) 
 
     # Remove Current Frame
     def deintializeCurrentFrames(self):
@@ -493,8 +485,6 @@ class MainGUI():
     def get_stat_data(self, data_arr):
         return (max(data_arr), min(data_arr), data_arr[-1])
 
-    def append_sensor_data(self, data_arr):
-        return 0
 
     def animate_and_set_data(self, max_widget, min_widget, cur_widget, data_axis, data_arr):
         self.animate_data(data_arr, data_axis)
@@ -544,14 +534,10 @@ class MainGUI():
         plot_axis.plot(plot_data, label="Sensor")
         plot_axis.plot(plot_corrected, label="Corrected")
         plot_axis.legend(loc="upper left")
-        display_stats = f"MAX: {max(plot_data)}\nMIN: {min(plot_data)}\nCUR: {plot_data[-1]}"
-        ax = plt.gca()
-
-        # plot_axis.text(0.5, 0.5, display_stats, horizontalalignment="right", verticalalignment="top", transform=ax.transAxes)
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        groupAnimation = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=1000, cache_frame_data=False)
+        animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=1000, cache_frame_data=False)
         self.execute()
     
     def execute(self):
