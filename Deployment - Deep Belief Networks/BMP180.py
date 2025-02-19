@@ -15,6 +15,9 @@ class BMP180:
         # Read Pressure Command
         self.READ_PRESSURE = 0x34
 
+        self.LAST_TEMP = 0
+        self.LAST_PRESSURE = 0 
+
         # Oversampling Setting (OSS):  0, 1, 2, or 3
         # Increasing OSS improves accuracy but increases conversion time.
         self.OSS = 3  # Try higher oversampling for more accuracy
@@ -102,36 +105,44 @@ class BMP180:
 
     # Function to calculate the temperature in degrees Celsius
     def calculate_temperature(self, ut, cal_data):
-        X1 = ((ut - cal_data['AC6']) * cal_data['AC5']) >> 15
-        X2 = (cal_data['MC'] << 11) // (X1 + cal_data['MD'])
-        B5 = X1 + X2
-        T = (B5 + 8) >> 4
-        return T / 10.0
+        try:
+            X1 = ((ut - cal_data['AC6']) * cal_data['AC5']) >> 15
+            X2 = (cal_data['MC'] << 11) // (X1 + cal_data['MD'])
+            B5 = X1 + X2
+            T = (B5 + 8) >> 4
+            self.LAST_TEMP = T / 10.0
+            return T / 10.0
+        except:
+            return self.LAST_TEMP
 
     # Function to calculate the pressure in Pascals
     def calculate_pressure(self, up, cal_data, b5):
-        B6 = b5 - 4000
-        X1 = (cal_data['B2'] * (B6 * B6) // 2**12) >> 11
-        X2 = (cal_data['AC2'] * B6) >> 11
-        X3 = X1 + X2
-        B3 = (((cal_data['AC1'] * 4 + X3) << self.OSS) + 2) // 4
-        X1 = (cal_data['AC3'] * B6) >> 13
-        X2 = (cal_data['B1'] * (B6 * B6) // 2**12) >> 16
-        X3 = ((X1 + X2) + 2) >> 2
-        B4 = (cal_data['AC4'] * (X3 + 32768)) >> 15
-        B7 = (up - B3) * (50000 >> self.OSS)
+        try:
+            B6 = b5 - 4000
+            X1 = (cal_data['B2'] * (B6 * B6) // 2**12) >> 11
+            X2 = (cal_data['AC2'] * B6) >> 11
+            X3 = X1 + X2
+            B3 = (((cal_data['AC1'] * 4 + X3) << self.OSS) + 2) // 4
+            X1 = (cal_data['AC3'] * B6) >> 13
+            X2 = (cal_data['B1'] * (B6 * B6) // 2**12) >> 16
+            X3 = ((X1 + X2) + 2) >> 2
+            B4 = (cal_data['AC4'] * (X3 + 32768)) >> 15
+            B7 = (up - B3) * (50000 >> self.OSS)
 
-        if B7 < 0x80000000:
-            p = (B7 * 2) // B4
-        else:
-            p = (B7 // B4) * 2
+            if B7 < 0x80000000:
+                p = (B7 * 2) // B4
+            else:
+                p = (B7 // B4) * 2
 
-        X1 = (p >> 8) * (p >> 8)
-        X1 = (X1 * 3038) >> 16
-        X2 = (-7357 * p) >> 16
+            X1 = (p >> 8) * (p >> 8)
+            X1 = (X1 * 3038) >> 16
+            X2 = (-7357 * p) >> 16
 
-        p = p + ((X1 + X2 + 3791) >> 4)
-        return p
+            p = p + ((X1 + X2 + 3791) >> 4)
+            self.LAST_PRESSURE = p
+            return p
+        except:
+            return self.LAST_PRESSURE
     
     def get_sensor_data(self, verbose = 0):
         # Main program
