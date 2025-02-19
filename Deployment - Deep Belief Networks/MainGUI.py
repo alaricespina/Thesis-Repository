@@ -571,7 +571,7 @@ class MainGUI():
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        groupAnimation = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=10, cache_frame_data=False)
+        groupAnimation = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=1, cache_frame_data=False)
         self.execute()
     
     def execute(self):
