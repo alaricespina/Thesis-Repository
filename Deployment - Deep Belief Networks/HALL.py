@@ -45,6 +45,7 @@ class HALL:
         
         self.last_left_sensor_value = self.left_sensor_value
         
+        return self.left_speed
 
         # if self.right_sensor_value == GPIO.LOW and self.last_right_sensor_value == GPIO.HIGH:
         #     current_time = time.time()
@@ -52,13 +53,13 @@ class HALL:
         #     self.right_last_time = current_time
         #     self.last_right_sensor_value = self.right_sensor_value
 
-        rpm1 = 0
-        # rpm2 = 0
+        # rpm1 = 0
+        # # rpm2 = 0
 
-        if self.left_rotation_time > 0:
-            rpm1 = 60.0 / self.left_rotation_time
+        # if self.left_rotation_time > 0:
+        #     rpm1 = 60.0 / self.left_rotation_time
 
-        return rpm1 
+        # return rpm1 
 
         # if self.right_rotation_time != 0:
         #     rpm2 = 60.0 / (self.right_rotation_time * 6) 
