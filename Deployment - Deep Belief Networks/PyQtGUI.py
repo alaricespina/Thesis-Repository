@@ -158,7 +158,7 @@ def update_plots():
 # Timer
 timer = QtCore.QTimer()
 timer.timeout.connect(update_plots)
-timer.start(20)  # Update every 20 milliseconds
+timer.start(250)  # Update every 20 milliseconds
 
 window.show()
 sys.exit(app.exec_())
