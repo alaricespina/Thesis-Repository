@@ -101,7 +101,7 @@ mainLayout.addWidget(console, 1, 2)  # Console takes up 1/3 of the width
 last_update_time = datetime.now()
 
 def roll_arr_and_append(arr, val):
-    np.roll(arr, -1)
+    arr = np.roll(arr, -1)
     arr[-1] = val
 
 # Update function
