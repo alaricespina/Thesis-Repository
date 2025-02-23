@@ -95,6 +95,11 @@ curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
 curve3 = pressure_plot.plot(x3, pressure_data, pen='b', name='Pressure')
 curve4 = wind_plot.plot(x4, wind_data, pen='b', name='Wind Speed')
 
+setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
+setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
+setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
+setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
+
 ############################################
 # Console
 ############################################
@@ -152,10 +157,11 @@ def update_plots():
     current_wind_data = wind_data[-1]
     
     try:
-        setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
-        setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
-        setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
-        setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
+        temp_plot.setYRange(temp_data.min() * 0.9, temp_data.max() * 1.1)
+        humid_plot.setYRange(humid_data.min() * 0.9, humid_data.max() * 1.1)
+        pressure_plot.setYRange(pressure_data.min() * 0.9, pressure_data.max() * 1.1)
+        wind_plot.setYRange(wind_data.min() * 0.9, wind_data.max() * 1.1)
+        
     except Exception as E:
         print("Failed Setting Limits", E)
 
