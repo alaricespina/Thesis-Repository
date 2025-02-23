@@ -456,14 +456,14 @@ class MainGUI():
     
     def update(self, frame):
         global BMP, HALL, DHT 
-        # temp_new_val = DHT.readTemperature() 
-        # humid_new_val = DHT.readHumidity()
-        # wind_new_val = HALL.readSpeed()
-        # pressure_new_val = BMP.readPressure() * -1 / 1000
-        temp_new_val = randint(1, 100)
-        humid_new_val = randint(1, 100)
-        wind_new_val = randint(1, 10)
-        pressure_new_val = randint(1, 1000)
+        temp_new_val = DHT.readTemperature() 
+        humid_new_val = DHT.readHumidity()
+        wind_new_val = HALL.readSpeed()
+        pressure_new_val = BMP.readPressure() * -1 / 1000
+        # temp_new_val = randint(1, 100)
+        # humid_new_val = randint(1, 100)
+        # wind_new_val = randint(1, 10)
+        # pressure_new_val = randint(1, 1000)
         
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
