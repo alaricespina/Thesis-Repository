@@ -157,10 +157,14 @@ def update_plots():
     current_wind_data = wind_data[-1]
     
     try:
-        temp_plot.setYRange(temp_data.min() * 0.9, temp_data.max() * 1.1)
-        humid_plot.setYRange(humid_data.min() * 0.9, humid_data.max() * 1.1)
-        pressure_plot.setYRange(pressure_data.min() * 0.9, pressure_data.max() * 1.1)
-        wind_plot.setYRange(wind_data.min() * 0.9, wind_data.max() * 1.1)
+        if current_temp_data != 0:
+            temp_plot.setYRange(temp_data.min() * 0.9, temp_data.max() * 1.1)
+        if current_humid_data != 0:
+            humid_plot.setYRange(humid_data.min() * 0.9, humid_data.max() * 1.1)
+        if current_pressure_data != 0:
+            pressure_plot.setYRange(pressure_data.min() * 0.9, pressure_data.max() * 1.1)
+        if current_wind_data != 0:
+            wind_plot.setYRange(wind_data.min() * 0.9, wind_data.max() * 1.1)
         
     except Exception as E:
         print("Failed Setting Limits", E)
