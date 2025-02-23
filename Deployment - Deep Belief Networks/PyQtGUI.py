@@ -28,7 +28,7 @@ except Exception as E:
 
 window = QMainWindow()
 window.setWindowTitle("Hello, PyQt! + 4 Dynamic Fixed-Size PyQtGraph Plots + Console")
-window.setGeometry(100, 100, 800, 400)  # Increased width for console
+window.setGeometry(0, 0, 1200, 600)  # Increased width for console
 
 mainWidget = QWidget(window)
 mainWidget.setStyleSheet("background-color: white;")  # Set main widget background to white
@@ -80,19 +80,21 @@ setPlotLimits(wind_plot, 0, 25)
 # Initialize data for each plot
 x1 = np.linspace(0, 10, 100)
 temp_data = np.sin(x1) if not in_board else np.zeros(100)
-curve1 = temp_plot.plot(x1, temp_data, pen='b')
+curve1 = temp_plot.plot(x1, temp_data, pen='b', name='Temperature')
 
 x2 = np.linspace(0, 10, 100)
 humid_data = np.cos(x2) if not in_board else np.zeros(100)
-curve2 = humid_plot.plot(x2, humid_data, pen='b')
+curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
 
 x3 = np.linspace(0, 10, 100)
 pressure_data = np.tan(x3) if not in_board else np.zeros(100)
-curve3 = pressure_plot.plot(x3, pressure_data, pen='b')
+curve3 = pressure_plot.plot(x3, pressure_data, pen='b', name='Pressure')
 
 x4 = np.linspace(0, 10, 100)
 wind_data = np.exp(-x4) if not in_board else np.zeros(100)
-curve4 = wind_plot.plot(x4, wind_data, pen='b')
+curve4 = wind_plot.plot(x4, wind_data, pen='b', name='Wind Speed')
+
+
 
 # 3. Create a QTextEdit for the console
 console = QTextEdit()
