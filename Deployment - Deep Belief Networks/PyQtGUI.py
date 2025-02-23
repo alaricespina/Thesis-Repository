@@ -28,7 +28,7 @@ except Exception as E:
 
 window = QMainWindow()
 window.setWindowTitle("Hello, PyQt! + 4 Dynamic Fixed-Size PyQtGraph Plots + Console")
-window.setGeometry(0, 0, 1200, 600)  # Increased width for console
+window.setGeometry(0, 0, 800, 400)  # Increased width for console
 
 mainWidget = QWidget(window)
 mainWidget.setStyleSheet("background-color: white;")  # Set main widget background to white
