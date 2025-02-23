@@ -44,11 +44,11 @@ graphicsView.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 mainLayout.addWidget(graphicsView, 0, 0, 2, 2)
 
 # 2. Add plots to the GraphicsLayoutWidget in a 2x2 grid
-temp_plot = graphicsView.addPlot(row=0, col=0, title="Temperature")
-humid_plot = graphicsView.addPlot(row=0, col=1, title="Humidity")
+temp_plot = graphicsView.addPlot(row=0, col=0, title="Temperature (°C)")
+humid_plot = graphicsView.addPlot(row=0, col=1, title="Humidity (%)")
 graphicsView.nextRow()  # Move to the next row
-pressure_plot = graphicsView.addPlot(row=1, col=0, title="Pressure")
-wind_plot = graphicsView.addPlot(row=1, col=1, title="Wind Speed")
+pressure_plot = graphicsView.addPlot(row=1, col=0, title="Pressure (mBar)")
+wind_plot = graphicsView.addPlot(row=1, col=1, title="Wind Speed (kph)")
 
 
 # Set size policy for each plot
@@ -140,7 +140,7 @@ def update_plots():
 
     x3 = x3 + 1
     if in_board:
-        pressure_data = roll_arr_and_append(pressure_data, BMP.readPressure() * -1 / 1000)
+        pressure_data = roll_arr_and_append(pressure_data, BMP.readPressure() * -1 / 1000 * 10)
     else:
         pressure_data = np.tan(x3)
     curve3.setData(x3, pressure_data)
@@ -158,8 +158,8 @@ def update_plots():
     last_update_time = now
 
     # Create the message
-    message = f"Temp: {current_temp_data:.2f}C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}KPa\nWind:{current_wind_data:.2f}m/s"
-    print(f"[{elapsed_ms:.2f} ms] - {message}")
+    message = f"Temperature: {current_temp_data:.2f}°C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}mBar\nWind:{current_wind_data:.2f}kph"
+    print(f"[{elapsed_ms:.2f} ms]\n{message}")
     # Append the message to the console
     console.setText(message)
 
