@@ -65,6 +65,7 @@ class MainGUI():
         self.WII = WeatherImageIcons()
         self.II = IndicatorIcons()
         self.loadHistoricalData()
+        self.last_check = datetime.now()
         
         
     def loadHistoricalData(self):
@@ -256,7 +257,6 @@ class MainGUI():
             self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_ACTIVE)
             self.insertWeatherConsole("DEMO - RAINY & SUNNY WEATHER CONDITION") 
 
-    
     # Remove Current Frame
     def deintializeCurrentFrames(self):
         self.sensor_frame.place_forget()
@@ -276,7 +276,6 @@ class MainGUI():
 
         self.site_button = ctk.CTkButton(master=self.button_frame, text="Site", command=self.showSite, font = self.arial_bold_font)
         self.site_button.place(relx=0.68, rely=0, relwidth=0.32, relheight=1)
-
 
     # Site (PAGASA Site) Frame
     def initializeSiteFrame(self, app):
@@ -444,9 +443,7 @@ class MainGUI():
     def get_stat_data(self, data_arr):
         return (max(data_arr), min(data_arr), data_arr[-1])
 
-
     def animate_and_set_data(self, max_widget, min_widget, cur_widget, data_axis, data_arr):
-        self.animate_data(data_arr, data_axis)
         max_reading, min_reading, cur_reading = self.get_stat_data(data_arr)
         max_widget.configure(text = f"MAX: {max_reading}")
         min_widget.configure(text = f"MIN: {min_reading}")
@@ -463,11 +460,14 @@ class MainGUI():
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
         self.time.append(now.strftime("%H:%M:%S"))
+        diff = now - self.last_check
 
         temp_new_val = temp_new_val if temp_new_val != None else 0
         humid_new_val = humid_new_val if humid_new_val != None else 0
 
-        print(f"{datetime.now().strftime('%H:%M:%S.%f')[:-3]} - Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {round(wind_new_val, 2)}, Pressure: {round(pressure_new_val, 3)}KPa")
+        print(f"{now.strftime('%H:%M:%S.%f')[:-3]} - {diff} - Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {round(wind_new_val, 2)}, Pressure: {round(pressure_new_val, 3)}KPa")
+
+        self.last_check = now
 
         self.temp_data.append(temp_new_val)
         self.humid_data.append(humid_new_val)
@@ -496,7 +496,7 @@ class MainGUI():
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=1, cache_frame_data=False)
+        a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=10, cache_frame_data=False)
         self.execute()
     
     def execute(self):
