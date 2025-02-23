@@ -151,7 +151,7 @@ def update_plots():
 
     # Create the message
     message = f"[{elapsed_ms:.2f} ms] - Plot 1: {current_temp_data:.2f}, Plot 2: {current_humid_data:.2f}, Plot 3: {current_pressure_data:.2f}, Plot 4: {current_wind_data:.2f}"
-
+    print(message)
     # Append the message to the console
     console.setText(message)
 
