@@ -67,7 +67,8 @@ def setPlotLimits(plot, ymin, ymax):
     plot.getAxis('left').setPen('k')  # Black pen for left axis
     # plot.getAxis('bottom').setPen('k') # Black pen for bottom axis
     plot.showAxis('left', True) # Make sure the axis is visible
-    plot.hideAxis('bottom')  # Hide the bottom (x) axis
+    # plot.hideAxis('bottom')  # Hide the bottom (x) axis
+    plot.getAxis('bottom').setTicks([[]])
     plot.getViewBox().setBackgroundColor('w')  # Set ViewBox background to white
 
 setPlotLimits(temp_plot, 0, 100)
