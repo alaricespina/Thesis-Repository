@@ -9,6 +9,7 @@ from datetime import datetime
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ImageHandler import WeatherImageIcons, IndicatorIcons
 import time 
+from random import randint 
 
 board_connected = False 
 temp_humid_sensor = None 
@@ -453,16 +454,16 @@ class MainGUI():
         cur_widget.configure(text = f"NOW: {cur_reading}")
         
     
-    def update(self):
+    def update(self, frame):
         global BMP, HALL, DHT 
         # temp_new_val = DHT.readTemperature() 
         # humid_new_val = DHT.readHumidity()
         # wind_new_val = HALL.readSpeed()
         # pressure_new_val = BMP.readPressure() * -1 / 1000
-        temp_new_val = 1
-        humid_new_val = 1
-        wind_new_val = 1
-        pressure_new_val = 1
+        temp_new_val = randint(1, 100)
+        humid_new_val = randint(1, 100)
+        wind_new_val = randint(1, 10)
+        pressure_new_val = randint(1, 1000)
         
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
@@ -496,7 +497,6 @@ class MainGUI():
         self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 15)
 
         # self.sensor_canvas.draw()
-
         # self.app.after(10, self.update)
     
     def changeGraphData(self, show_data, show_corrected, plot_axis, lower_limit = 0, higher_limit = 150, data_length = 20):
@@ -518,7 +518,6 @@ class MainGUI():
         self.app.mainloop()
 
 if __name__ == "__main__":
-
     ThesisMG = MainGUI()
     ThesisMG.initializeGUI()
-    ThesisMG.execute()
+    ThesisMG.setupAnimationAndExecute()
