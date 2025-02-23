@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QTextEdit,QSpacerItem
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
@@ -9,22 +9,20 @@ from datetime import datetime
 app = QApplication(sys.argv)
 
 window = QMainWindow()
-window.setWindowTitle("Hello, PyQt! + 4 Dynamic Fixed-Size PyQtGraph Plots")
-window.setGeometry(100, 100, 800, 600)  # Increased height
+window.setWindowTitle("Hello, PyQt! + 4 Dynamic Fixed-Size PyQtGraph Plots + Console")
+window.setGeometry(100, 100, 800, 400)  # Increased width for console
 
 mainWidget = QWidget(window)
 window.setCentralWidget(mainWidget)
 
-mainLayout = QtWidgets.QVBoxLayout(mainWidget)
+mainLayout = QtWidgets.QHBoxLayout(mainWidget)  # Horizontal layout for plots and console
 
-label = QLabel("Implementation of a Deep Belief Network with Sensor Correction Algorithm to predict Weather on a Raspberry Pi")
-mainLayout.addWidget(label)
-
-# Create a GraphicsLayoutWidget
+# 1. Create a GraphicsLayoutWidget for the plots
 graphicsView = pg.GraphicsLayoutWidget()
-mainLayout.addWidget(graphicsView)
+graphicsView.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+mainLayout.addWidget(graphicsView, 2)  # Plots take up 2/3 of the width
 
-# Add plots to the GraphicsLayoutWidget in a 2x2 grid
+# 2. Add plots to the GraphicsLayoutWidget in a 2x2 grid
 plot1 = graphicsView.addPlot(row=0, col=0, title="Plot 1")
 plot2 = graphicsView.addPlot(row=0, col=1, title="Plot 2")
 graphicsView.nextRow()  # Move to the next row
@@ -36,8 +34,8 @@ for plot in [plot1, plot2, plot3, plot4]:
     plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
 # Set minimum size for each plot (50% of window width and height)
-min_width = window.width() / 2
-min_height = (window.height() - label.height()) / 2  # Account for label height
+min_width = (window.width() * 2 / 3) / 2  # Adjusted for console
+min_height = (window.height()) / 2
 for plot in [plot1, plot2, plot3, plot4]:
     plot.setMinimumSize(min_width, min_height)
 
@@ -61,6 +59,24 @@ curve3 = plot3.plot(x3, y3, pen='b')
 x4 = np.linspace(0, 10, 100)
 y4 = np.exp(-x4)
 curve4 = plot4.plot(x4, y4, pen='y')
+
+# 3. Create a QTextEdit for the console
+console = QTextEdit()
+console.setReadOnly(True)  # Make it read-only
+console.setStyleSheet("background-color: black; color: white;")  # Black background, white text
+console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) # Remove horizontal scrollbar
+console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) # Remove vertical scrollbar
+
+# 4. Create a layout for the console
+consoleLayout = QtWidgets.QVBoxLayout()
+consoleLayout.addItem(QtWidgets.QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding)) # Add a spacer item
+consoleLayout.addWidget(console)
+
+# 5. Create a widget to hold the console layout
+consoleWidget = QWidget()
+consoleWidget.setLayout(consoleLayout)
+consoleWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+mainLayout.addWidget(consoleWidget, 1)  # Console takes up 1/3 of the width
 
 # Initialize last_update_time
 last_update_time = datetime.now()
@@ -98,13 +114,16 @@ def update_plots():
     # Update last_update_time
     last_update_time = now
 
-    # Print the elapsed time and current y-values
-    print(f"Update interval: {elapsed_ms:.2f} ms | Plot 1: {current_y1:.2f}, Plot 2: {current_y2:.2f}, Plot 3: {current_y3:.2f}, Plot 4: {current_y4:.2f}")
+    # Create the message
+    message = f"[{elapsed_ms:.2f} ms] - Plot 1: {current_y1:.2f}, Plot 2: {current_y2:.2f}, Plot 3: {current_y3:.2f}, Plot 4: {current_y4:.2f}"
+
+    # Append the message to the console
+    console.setText(message)
 
 # Timer
 timer = QtCore.QTimer()
 timer.timeout.connect(update_plots)
-timer.start(10)  # Update every 100 milliseconds
+timer.start(20)  # Update every 20 milliseconds
 
 window.show()
 sys.exit(app.exec_())
