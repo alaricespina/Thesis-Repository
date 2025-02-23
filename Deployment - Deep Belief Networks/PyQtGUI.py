@@ -151,11 +151,13 @@ def update_plots():
     curve4.setData(x4, wind_data)
     current_wind_data = wind_data[-1]
     
-    setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
-    setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
-    setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
-    setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
-
+    try:
+        setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
+        setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
+        setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
+        setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
+    except Exception as E:
+        print("Failed Setting Limits", E)
 
     # Update last_update_time
     last_update_time = now
