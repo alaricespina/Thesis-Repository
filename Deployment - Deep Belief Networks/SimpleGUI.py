@@ -455,10 +455,14 @@ class MainGUI():
     
     def update(self):
         global BMP, HALL, DHT 
-        temp_new_val = DHT.readTemperature() 
-        humid_new_val = DHT.readHumidity()
-        wind_new_val = HALL.readSpeed()
-        pressure_new_val = BMP.readPressure() * -1 / 1000
+        # temp_new_val = DHT.readTemperature() 
+        # humid_new_val = DHT.readHumidity()
+        # wind_new_val = HALL.readSpeed()
+        # pressure_new_val = BMP.readPressure() * -1 / 1000
+        temp_new_val = 1
+        humid_new_val = 1
+        wind_new_val = 1
+        pressure_new_val = 1
         
         now = datetime.now()
         self.date.append(now.strftime("%m/%d/%Y"))
