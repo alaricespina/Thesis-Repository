@@ -452,7 +452,7 @@ class MainGUI():
         cur_widget.configure(text = f"NOW: {cur_reading}")
         
     
-    def animate_group(self, frame):
+    def update(self):
         global BMP, HALL, DHT 
         temp_new_val = DHT.readTemperature() 
         humid_new_val = DHT.readHumidity()
@@ -489,6 +489,8 @@ class MainGUI():
         self.changeGraphData(self.humid_data, self.corrected_humid_data, self.sensor_axs[0, 1], 0, 100)
         self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.sensor_axs[1, 0], 0, 1500)
         self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 15)
+
+        self.app.after(10, self.update)
     
     def changeGraphData(self, show_data, show_corrected, plot_axis, lower_limit = 0, higher_limit = 150, data_length = 20):
         plot_data = show_data[-1 * data_length:]
@@ -502,11 +504,11 @@ class MainGUI():
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=10, cache_frame_data=False)
+        # a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=10, cache_frame_data=False)
         self.execute()
     
     def execute(self):
-        self.app.mainloop()
+        self.update()
 
 if __name__ == "__main__":
 
