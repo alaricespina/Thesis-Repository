@@ -67,7 +67,7 @@ def setPlotLimits(plot, ymin, ymax):
     plot.getAxis('left').setPen('k')  # Black pen for left axis
     plot.getAxis('bottom').setPen('k') # Black pen for bottom axis
     plot.showAxis('left', True) # Make sure the axis is visible
-    plot.showAxis('bottom', True) # Make sure the axis is visible
+    # plot.showAxis('bottom', True) # Make sure the axis is visible
     plot.getViewBox().setBackgroundColor('w')  # Set ViewBox background to white
 
 setPlotLimits(temp_plot, 0, 100)
@@ -157,7 +157,7 @@ def update_plots():
     last_update_time = now
 
     # Create the message
-    message = f"[{elapsed_ms:.2f} ms] - Plot 1: {current_temp_data:.2f}, Plot 2: {current_humid_data:.2f}, Plot 3: {current_pressure_data:.2f}, Plot 4: {current_wind_data:.2f}"
+    message = f"[{elapsed_ms:.2f} ms] - Temp: {current_temp_data:.2f}C, Humid: {current_humid_data:.2f}%, Pressure:{current_pressure_data:.2f}KPa, Wind:{current_wind_data:.2f}m/s"
     print(message)
     # Append the message to the console
     console.setText(message)
