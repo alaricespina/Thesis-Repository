@@ -66,6 +66,8 @@ class MainGUI():
         self.II = IndicatorIcons()
         self.loadHistoricalData()
         self.last_check = datetime.now()
+        self.total_delay = 0
+        self.delay_count = 0
         
         
     def loadHistoricalData(self):
@@ -462,11 +464,14 @@ class MainGUI():
         self.time.append(now.strftime("%H:%M:%S"))
         diff = now - self.last_check
         dc = round((diff.microseconds + diff.seconds * 1000000) / 1000, 0)
+        self.total_delay += dc 
+        self.delay_count += 1
+        adc = round(self.total_delay / self.delay_count, 0)
 
         temp_new_val = temp_new_val if temp_new_val != None else 0
         humid_new_val = humid_new_val if humid_new_val != None else 0
 
-        print(f"{now.strftime('%H:%M:%S.%f')[:-3]} - {dc}ms - Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {round(wind_new_val, 2)}, Pressure: {round(pressure_new_val, 3)}KPa")
+        print(f"{now.strftime('%H:%M:%S.%f')[:-3]} - {dc}ms = {adc}ms - Temp: {temp_new_val}C, Humid: {humid_new_val}%, Wind: {round(wind_new_val, 2)}, Pressure: {round(pressure_new_val, 3)}KPa")
 
         self.last_check = now
 
