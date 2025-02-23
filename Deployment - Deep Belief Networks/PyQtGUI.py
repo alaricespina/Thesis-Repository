@@ -62,13 +62,19 @@ for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
 #     plot.setMinimumSize(int(min_width), int(min_height))  # Convert to int
 
 # Set fixed Y-axis limits for each plot
-for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
-    plot.setYRange(-1.5, 1.5)  # Adjust these values as needed
+def setPlotLimits(plot, ymin, ymax):
+    plot.setYRange(ymin, ymax)
     plot.getAxis('left').setPen('k')  # Black pen for left axis
     plot.getAxis('bottom').setPen('k') # Black pen for bottom axis
     plot.showAxis('left', True) # Make sure the axis is visible
     plot.showAxis('bottom', True) # Make sure the axis is visible
     plot.getViewBox().setBackgroundColor('w')  # Set ViewBox background to white
+
+setPlotLimits(temp_plot, 0, 100)
+setPlotLimits(humid_plot, 0, 100)
+setPlotLimits(pressure_plot, 0, 200)
+setPlotLimits(wind_plot, 0, 25)
+    
 
 # Initialize data for each plot
 x1 = np.linspace(0, 10, 100)
