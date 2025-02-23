@@ -158,8 +158,8 @@ def update_plots():
     last_update_time = now
 
     # Create the message
-    message = f"[{elapsed_ms:.2f} ms] - Temp: {current_temp_data:.2f}C, Humid: {current_humid_data:.2f}%, Pressure:{current_pressure_data:.2f}KPa, Wind:{current_wind_data:.2f}m/s"
-    print(message)
+    message = f"Temp: {current_temp_data:.2f}C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}KPa\nWind:{current_wind_data:.2f}m/s"
+    print(f"[{elapsed_ms:.2f} ms] - {message}")
     # Append the message to the console
     console.setText(message)
 
