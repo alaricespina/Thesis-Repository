@@ -256,49 +256,7 @@ class MainGUI():
             self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_ACTIVE)
             self.insertWeatherConsole("DEMO - RAINY & SUNNY WEATHER CONDITION") 
 
-    # def ToggleDemoReal(self):
-    #     if self.DEMO_MODE:
-    #         self.DEMO_MODE = False
-    #         self.demo_real_mode.configure(image = self.II.REAL_MODE)
-    #         self.insertGenericConsole("Switching to Real Mode")
-    #     else:
-    #         self.DEMO_MODE = True
-    #         self.demo_real_mode.configure(image = self.II.DEMO_MODE)
-    #         self.insertGenericConsole("Switching to Demo Mode")
-
-    # def windCheck(self):
-    #     self.HALL_CONNECTED = False 
-
-    # def humidCheck(self):
-    #     self.DHT_CONNECTED = False 
-    #     temp = temp_humid_sensor.temperature
-    #     humid = temp_humid_sensor.humidity
-    #     self.insertGenericConsole(f"Temperature: {temp}C")
-    #     self.insertGenericConsole(f"Humidity: {humid}%")
-
-    # def tempCheck(self):
-    #     self.DHT_CONNECTED = False 
-
-    # def pressureCheck(self):
-    #     self.BMP_CONNECTED = False 
-
-    # def checkSensor(self, sensorName, sensorCheckerFunction, workingImage, demoImage, disconImage, sensorWidget):
-    #     sensorWidget.configure(image = disconImage)
-    #     self.insertGenericConsole(f"Checking {sensorName} Connection")
-
-
-    # def ToggleWind(self):
-    #     self.checkSensor("Anemometer", self.windCheck, self.II.WIND_WORK, self.II.WIND_DEMO, self.II.WIND_DISCON, self.anemo_status)
-
-    # def ToggleTemp(self):
-    #     self.checkSensor("Thermometer", self.tempCheck, self.II.TEMP_WORK, self.II.TEMP_DEMO, self.II.TEMP_DISCON, self.temp_status) 
-
-    # def ToggleHumid(self):
-    #     self.checkSensor("Hygrometer", self.humidCheck, self.II.HUMID_WORK, self.II.HUMID_DEMO, self.II.HUMID_DISCON, self.humid_status)
-
-    # def TogglePressure(self):
-    #     self.checkSensor("Barometer", self.pressureCheck, self.II.PRESSURE_WORK, self.II.PRESSURE_DEMO, self.II.PRESSURE_DISCON, self.bmp_status) 
-
+    
     # Remove Current Frame
     def deintializeCurrentFrames(self):
         self.sensor_frame.place_forget()
@@ -324,6 +282,7 @@ class MainGUI():
     def initializeSiteFrame(self, app):
         labels = ["datetime", "tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure", "conditions"]
         print(self.concatenated_data[labels])
+
         def populate(frame):
             num_cols = len(labels)
             frame.grid_columnconfigure(tuple(x for x in range(num_cols)), weight=1, uniform="x")
@@ -373,7 +332,6 @@ class MainGUI():
 
         # self.canvas.place_forget()
         
-
     # Local Frame (Sensor Readings Frame)
     def initializeLocalFrame(self, app):
 
@@ -538,7 +496,7 @@ class MainGUI():
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=1000, cache_frame_data=False)
+        a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=1, cache_frame_data=False)
         self.execute()
     
     def execute(self):
