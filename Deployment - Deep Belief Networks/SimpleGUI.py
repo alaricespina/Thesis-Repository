@@ -495,7 +495,7 @@ class MainGUI():
         self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.sensor_axs[1, 0], 0, 1500)
         self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 15)
 
-        self.sensor_canvas.draw()
+        # self.sensor_canvas.draw()
 
         # self.app.after(10, self.update)
     
@@ -511,13 +511,11 @@ class MainGUI():
         plot_axis.set_title(title)
 
     def setupAnimationAndExecute(self):
-        # a = animation.FuncAnimation(self.sensor_fig, self.animate_group, interval=10, cache_frame_data=False)
+        a = animation.FuncAnimation(self.sensor_fig, self.update, interval=10, cache_frame_data=False)
         self.execute()
     
     def execute(self):
-        while True:
-            self.update()
-            time.sleep(0.1)
+        self.app.mainloop()
 
 if __name__ == "__main__":
 
