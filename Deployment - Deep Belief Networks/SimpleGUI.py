@@ -211,8 +211,8 @@ class MainGUI():
         self.sensor_frame.place(relx=0.05, rely=0.15, relheight = 0.7, relwidth=0.6)
         self.sensor_fig, self.sensor_axs = plt.subplots(2, 2)
         plt.tight_layout()
-        sensor_canvas = FigureCanvasTkAgg(self.sensor_fig, self.sensor_frame)
-        sensor_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.sensor_canvas = FigureCanvasTkAgg(self.sensor_fig, self.sensor_frame)
+        self.sensor_canvas.get_tk_widget().place(relx=0, rely=0, relwidth=1, relheight=1)
 
         self.sensor_axs[0, 0].set_title("Temperature")
         self.sensor_axs[0, 1].set_title("Humidity")
@@ -491,7 +491,7 @@ class MainGUI():
         self.changeGraphData(self.pressure_data, self.corrected_pressure_data, self.sensor_axs[1, 0], 0, 1500)
         self.changeGraphData(self.wind_data, self.corrected_wind_data, self.sensor_axs[1, 1], 0, 15)
 
-        self.app.update()
+        self.sensor_canvas.draw()
 
         # self.app.after(10, self.update)
     
@@ -513,7 +513,7 @@ class MainGUI():
     def execute(self):
         while True:
             self.update()
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 if __name__ == "__main__":
 
