@@ -72,19 +72,19 @@ for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
 
 # Initialize data for each plot
 x1 = np.linspace(0, 10, 100)
-temp_data = np.sin(x1) if not in_board else [DHT.readTemperature()] 
+temp_data = np.sin(x1) if not in_board else np.zeros(100)
 curve1 = temp_plot.plot(x1, temp_data, pen='b')
 
 x2 = np.linspace(0, 10, 100)
-humid_data = np.cos(x2) if not in_board else [DHT.readHumidity()]
+humid_data = np.cos(x2) if not in_board else np.zeros(100)
 curve2 = humid_plot.plot(x2, humid_data, pen='b')
 
 x3 = np.linspace(0, 10, 100)
-pressure_data = np.tan(x3) if not in_board else [BMP.readPressure() * -1 / 1000]
+pressure_data = np.tan(x3) if not in_board else np.zeros(100)
 curve3 = pressure_plot.plot(x3, pressure_data, pen='b')
 
 x4 = np.linspace(0, 10, 100)
-wind_data = np.exp(-x4) if not in_board else [HALL.readSpeed()]
+wind_data = np.exp(-x4) if not in_board else np.zeros(100)
 curve4 = wind_plot.plot(x4, wind_data, pen='b')
 
 # 3. Create a QTextEdit for the console
