@@ -92,7 +92,8 @@ class MainGUI():
 
         self.initializeCurrentFrame(self.app)
         self.initializeFrameControls(self.app)
-        self.setupAnimationAndExecute()
+        # self.setupAnimationAndExecute()
+        self.execute()
 
     def clearScreen(self):
         try:
