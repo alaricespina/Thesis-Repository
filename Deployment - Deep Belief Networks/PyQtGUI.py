@@ -76,11 +76,7 @@ wind_plot = graphicsView.addPlot(row=1, col=1, title="Wind Speed (kph)")
 for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
     plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-setPlotLimits(temp_plot, 0, 100)
-setPlotLimits(humid_plot, 0, 100)
-setPlotLimits(pressure_plot, 0, 200)
-setPlotLimits(wind_plot, 0, 25)
-    
+
 ############################################
 # Seed Data
 ############################################
@@ -154,6 +150,12 @@ def update_plots():
         wind_data = np.exp(-x4)
     curve4.setData(x4, wind_data)
     current_wind_data = wind_data[-1]
+    
+    setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
+    setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
+    setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
+    setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
+
 
     # Update last_update_time
     last_update_time = now
