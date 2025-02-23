@@ -11,6 +11,7 @@ from ImageHandler import WeatherImageIcons, IndicatorIcons
 
 board_connected = False 
 temp_humid_sensor = None 
+testing_change = True
 
 try:
     from HALL import HALL_EFFECT
