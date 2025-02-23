@@ -100,6 +100,10 @@ mainLayout.addWidget(console, 1, 2)  # Console takes up 1/3 of the width
 # Initialize last_update_time
 last_update_time = datetime.now()
 
+def roll_arr_and_append(arr, val):
+    np.roll(arr, -1)
+    arr[-1] = val
+
 # Update function
 def update_plots():
     global x1, temp_data, x2, humid_data, x3, pressure_data, x4, wind_data, last_update_time
@@ -112,7 +116,7 @@ def update_plots():
     # Update data for each plot (replace with your actual data sources)
     x1 = x1 + 1
     if in_board:
-        temp_data.append(DHT.readTemperature())
+        roll_arr_and_append(temp_data, DHT.readTemperature())
     else:
         temp_data = np.sin(x1)
     curve1.setData(x1, temp_data)
@@ -120,7 +124,7 @@ def update_plots():
 
     x2 = x2 + 1  # Different update rate for each plot
     if in_board:
-        humid_data.append(DHT.readHumidity())
+        roll_arr_and_append(humid_data, DHT.readHumidity())
     else:
         humid_data = np.cos(x2)
     curve2.setData(x2, humid_data)
@@ -128,7 +132,7 @@ def update_plots():
 
     x3 = x3 + 1
     if in_board:
-        pressure_data.append(BMP.readPressure() * -1 / 1000)
+        roll_arr_and_append(pressure_data, BMP.readPressure() * -1 / 1000)
     else:
         pressure_data = np.tan(x3)
     curve3.setData(x3, pressure_data)
@@ -136,7 +140,7 @@ def update_plots():
 
     x4 = x4 + 1
     if in_board:
-        wind_data.append(HALL.readSpeed())
+        roll_arr_and_append(wind_data, HALL.readWindSpeed())
     else:
         wind_data = np.exp(-x4)
     curve4.setData(x4, wind_data)
