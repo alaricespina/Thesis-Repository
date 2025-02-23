@@ -140,7 +140,7 @@ def update_plots():
 
     x4 = x4 + 1
     if in_board:
-        roll_arr_and_append(wind_data, HALL.readWindSpeed())
+        roll_arr_and_append(wind_data, HALL.readSpeed())
     else:
         wind_data = np.exp(-x4)
     curve4.setData(x4, wind_data)
