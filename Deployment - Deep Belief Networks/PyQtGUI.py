@@ -8,6 +8,11 @@ from datetime import datetime
 
 app = QApplication(sys.argv)
 
+# Title
+# Condition
+# Local Records
+# Site Records
+
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
@@ -26,95 +31,89 @@ try:
 except Exception as E:
     print("Error: ", E)
 
-window = QMainWindow()
-window.setWindowTitle("Hello, PyQt! + 4 Dynamic Fixed-Size PyQtGraph Plots + Console")
-window.setGeometry(0, 0, 800, 400)  # Increased width for console
+############################################
+# HELPER FUNCTIONS
+############################################
+last_update_time = datetime.now()
 
-mainWidget = QWidget(window)
-mainWidget.setStyleSheet("background-color: white;")  # Set main widget background to white
-window.setCentralWidget(mainWidget)
-
-mainLayout = QGridLayout(mainWidget)
-
-# 1. Create a GraphicsLayoutWidget for the plots
-graphicsView = pg.GraphicsLayoutWidget()
-graphicsView.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-# graphicsView.setStyleSheet("background-color: white;")  # Not reliable
-
-mainLayout.addWidget(graphicsView, 0, 0, 2, 2)
-
-# 2. Add plots to the GraphicsLayoutWidget in a 2x2 grid
-temp_plot = graphicsView.addPlot(row=0, col=0, title="Temperature (°C)")
-humid_plot = graphicsView.addPlot(row=0, col=1, title="Humidity (%)")
-graphicsView.nextRow()  # Move to the next row
-pressure_plot = graphicsView.addPlot(row=1, col=0, title="Pressure (mBar)")
-wind_plot = graphicsView.addPlot(row=1, col=1, title="Wind Speed (kph)")
-
-
-# Set size policy for each plot
-for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
-    plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-# Set minimum size for each plot (50% of window width and height)
-# min_width = (window.width() * 2 / 3) / 2  # Adjusted for console
-# min_height = (window.height()) / 2
-# for plot in [plot1, plot2, plot3, plot4]:
-#     plot.setMinimumSize(int(min_width), int(min_height))  # Convert to int
-
-# Set fixed Y-axis limits for each plot
 def setPlotLimits(plot, ymin, ymax):
     plot.setYRange(ymin, ymax)
-    plot.getAxis('left').setPen('k')  # Black pen for left axis
-    # plot.getAxis('bottom').setPen('k') # Black pen for bottom axis
-    plot.showAxis('left', True) # Make sure the axis is visible
-    # plot.hideAxis('bottom')  # Hide the bottom (x) axis
+    plot.getAxis('left').setPen('k')
+    plot.showAxis('left', True)
     plot.getAxis('bottom').setTicks([[]])
-    plot.getViewBox().setBackgroundColor('w')  # Set ViewBox background to white
-
-setPlotLimits(temp_plot, 0, 100)
-setPlotLimits(humid_plot, 0, 100)
-setPlotLimits(pressure_plot, 0, 200)
-setPlotLimits(wind_plot, 0, 25)
-    
-
-# Initialize data for each plot
-x1 = np.linspace(0, 10, 100)
-temp_data = np.sin(x1) if not in_board else np.zeros(100)
-curve1 = temp_plot.plot(x1, temp_data, pen='b', name='Temperature')
-
-x2 = np.linspace(0, 10, 100)
-humid_data = np.cos(x2) if not in_board else np.zeros(100)
-curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
-
-x3 = np.linspace(0, 10, 100)
-pressure_data = np.tan(x3) if not in_board else np.zeros(100)
-curve3 = pressure_plot.plot(x3, pressure_data, pen='b', name='Pressure')
-
-x4 = np.linspace(0, 10, 100)
-wind_data = np.exp(-x4) if not in_board else np.zeros(100)
-curve4 = wind_plot.plot(x4, wind_data, pen='b', name='Wind Speed')
-
-
-
-# 3. Create a QTextEdit for the console
-console = QTextEdit()
-console.setReadOnly(True)  # Make it read-only
-console.setStyleSheet("background-color: black; color: white;")  # Black background, white text
-console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) # Remove horizontal scrollbar
-console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) # Remove vertical scrollbar
-spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
-mainLayout.addItem(spacer, 0, 2)
-mainLayout.addWidget(console, 1, 2)  # Console takes up 1/3 of the width
-
-# Initialize last_update_time
-last_update_time = datetime.now()
+    plot.getViewBox().setBackgroundColor('w')
 
 def roll_arr_and_append(arr, val):
     arr = np.roll(arr, -1)
     arr[-1] = val
     return arr
 
-# Update function
+############################################
+# Main Window
+############################################
+window = QMainWindow()
+window.setWindowTitle("DeepBelief Networks - Weather Prediction")
+window.setGeometry(0, 0, 800, 400)
+mainWidget = QWidget(window)
+mainWidget.setStyleSheet("background-color: white;")
+window.setCentralWidget(mainWidget)
+
+mainLayout = QGridLayout(mainWidget)
+
+############################################
+# Sensor Graphs
+############################################
+graphicsView = pg.GraphicsLayoutWidget()
+graphicsView.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+mainLayout.addWidget(graphicsView, 0, 0, 2, 2)
+
+temp_plot = graphicsView.addPlot(row=0, col=0, title="Temperature (°C)")
+humid_plot = graphicsView.addPlot(row=0, col=1, title="Humidity (%)")
+graphicsView.nextRow()
+pressure_plot = graphicsView.addPlot(row=1, col=0, title="Pressure (mBar)")
+wind_plot = graphicsView.addPlot(row=1, col=1, title="Wind Speed (kph)")
+
+for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
+    plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+setPlotLimits(temp_plot, 0, 100)
+setPlotLimits(humid_plot, 0, 100)
+setPlotLimits(pressure_plot, 0, 200)
+setPlotLimits(wind_plot, 0, 25)
+    
+############################################
+# Seed Data
+############################################
+x1 = np.linspace(0, 10, 100)
+x2 = np.linspace(0, 10, 100)
+x3 = np.linspace(0, 10, 100)
+x4 = np.linspace(0, 10, 100)
+
+temp_data = np.sin(x1) if not in_board else np.zeros(100)
+humid_data = np.cos(x2) if not in_board else np.zeros(100)
+pressure_data = np.tan(x3) if not in_board else np.zeros(100)
+wind_data = np.exp(-x4) if not in_board else np.zeros(100)
+
+curve1 = temp_plot.plot(x1, temp_data, pen='b', name='Temperature')
+curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
+curve3 = pressure_plot.plot(x3, pressure_data, pen='b', name='Pressure')
+curve4 = wind_plot.plot(x4, wind_data, pen='b', name='Wind Speed')
+
+############################################
+# Console
+############################################
+console = QTextEdit()
+console.setReadOnly(True)  # Make it read-only
+console.setStyleSheet("background-color: black; color: white;") 
+console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) 
+console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+mainLayout.addItem(spacer, 0, 2)
+mainLayout.addWidget(console, 1, 2)
+
+############################################
+# Main Driver Function
+############################################
 def update_plots():
     global x1, temp_data, x2, humid_data, x3, pressure_data, x4, wind_data, last_update_time
 
@@ -165,10 +164,15 @@ def update_plots():
     # Append the message to the console
     console.setText(message)
 
+############################################
 # Timer
+############################################
 timer = QtCore.QTimer()
 timer.timeout.connect(update_plots)
 timer.start(250)  # Update every 20 milliseconds
 
+############################################
+# Main Loop
+############################################
 window.show()
 sys.exit(app.exec_())
