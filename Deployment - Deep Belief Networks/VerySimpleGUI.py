@@ -8,7 +8,6 @@ import os
 from datetime import datetime 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ImageHandler import WeatherImageIcons, IndicatorIcons
-import time 
 
 board_connected = False 
 temp_humid_sensor = None 
@@ -18,33 +17,20 @@ try:
     from HALL import HALL_EFFECT
     from BMP180 import BMP180 
     from DHT11 import DHT11 
-    # import RPi.GPIO as GPIO 
-    # GPIO.setmode(GPIO.BOARD)
     HALL = HALL_EFFECT()
     BMP = BMP180()
     DHT = DHT11()
-
     print("Succesfully imported Necessary Packages in RPI")
 
 except Exception as E:
     print("Error: ", E)
 
-'''
-Green : 00ff24
-Yellow : ffc600
-Red : ff0000
-'''
 
 class MainGUI():
     def __init__(self, w = 800, h = 480, title = "DBN Implementation on Weather Prediction using RPI"):
         self.WIDTH = w
         self.HEIGHT = h
         self.TITLE = title 
-
-        self.BMP_CONNECTED = False 
-        self.HALL_CONNECTED = False 
-        self.DHT_CONNECTED = False
-        self.DEMO_MODE = True 
 
         self.temp_data = [0]
         self.humid_data = [0]
@@ -60,25 +46,10 @@ class MainGUI():
         self.date = []
         self.time = []
 
-        self.local_data_viewing = 25
-        self.site_data_viewing = 25
-
-        self.WII = WeatherImageIcons()
-        self.II = IndicatorIcons()
-        self.loadHistoricalData()
         self.last_check = datetime.now()
         self.total_delay = 0
         self.delay_count = 0
         
-        
-    def loadHistoricalData(self):
-        list_data = []
-        for file_name in os.listdir("Data"):
-            print("Opening:",file_name)
-            current_data = pd.read_csv("Data/" + file_name)
-            list_data.append(current_data)
-        
-        self.concatenated_data = pd.concat(list_data, ignore_index=True, sort=False)
 
     def initializeGUI(self):
         self.app = ctk.CTk()
@@ -92,25 +63,13 @@ class MainGUI():
         self.arial_title_font = ctk.CTkFont(family="Arial", size=15, weight="bold")
 
         self.initializeCurrentFrame(self.app)
-        self.initializeFrameControls(self.app)
-
 
     def clearScreen(self):
         try:
             self.deintializeCurrentFrames()
         except:
             pass
-
-        try:
-            self.deinitializeLocalFrame()
-        except:
-            pass
-
-        try:
-            self.deinitializeSiteFrame()
-        except:
-            pass
-        
+   
         print("Cleared")
 
     def showCurrent(self):
@@ -118,13 +77,6 @@ class MainGUI():
         self.initializeCurrentFrame(self.app)
         self.setupAnimationAndExecute()
 
-    def showLocal(self):
-        self.clearScreen()
-        self.initializeLocalFrame(self.app)
-
-    def showSite(self):
-        self.clearScreen()
-        self.initializeSiteFrame(self.app)
 
     # ========================================================================================================================
     # FRAME SECTION
@@ -141,66 +93,7 @@ class MainGUI():
         self.prediction_frame = ctk.CTkFrame(master=app, fg_color="transparent")
         self.prediction_frame.place(relx=0.7, rely=0.15, relheight = 0.7, relwidth = 0.25)
 
-        # Weather Prediction Frame
-        weather_prediction_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="red")
-        weather_prediction_frame.place(relx=0, rely=0, relwidth=1.0, relheight=0.4)
-    
-        self.cloudy_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleCloudy)
-        self.rainy_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleRainy)
-        self.sunny_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleSunny)
-        self.rainy_and_sunny_indicator = ctk.CTkButton(master=weather_prediction_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleRainySunny)
-
-        self.cloudy_indicator.place(relx=0, rely=0, relwidth=0.5, relheight=0.5)
-        self.rainy_indicator.place(relx=0.5, rely=0, relwidth=0.5, relheight=0.5)
-        self.sunny_indicator.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
-        self.rainy_and_sunny_indicator.place(relx=0.5, rely=0.5, relwidth=0.5, relheight=0.5)
-
-        w = self.cloudy_indicator.cget("width")
-        weather_scaling = 0.4
-        if (self.WII.w == -1 or self.WII.h == -1):
-            self.WII.setDimensions(w * weather_scaling, w * weather_scaling)
-            self.WII.makeImages()
-
-        self.cloudy_indicator.configure(image = self.WII.CLOUDY_INACTIVE)
-        self.rainy_indicator.configure(image = self.WII.RAINY_INACTIVE)
-        self.sunny_indicator.configure(image = self.WII.SUNNY_INACTIVE)
-        self.rainy_and_sunny_indicator.configure(image = self.WII.RAINY_AND_SUNNY_INACTIVE)
         
-        # Mini Console Frame for Weather
-        weather_console_frame = ctk.CTkFrame(master=self.prediction_frame)
-        self.weather_textbox = ctk.CTkTextbox(master=weather_console_frame, fg_color="black", corner_radius=0)
-        weather_console_frame.place(relx=0, rely=0.45, relwidth=1.0, relheight=0.1)
-        self.weather_textbox.place(relx=0, rely=0, relwidth=1.0, relheight=1.0)
-        # self.console_textbox.see("end")
-
-        # Indicators Frame
-        # indicator_frame = ctk.CTkFrame(master=self.prediction_frame, fg_color="black")
-        # indicator_frame.place(relx=0, rely=0.6, relwidth=1.0, relheight=0.15)
-
-        # self.demo_real_mode = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleDemoReal)
-        # self.anemo_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleWind)
-        # self.temp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleTemp)
-        # self.humid_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.ToggleHumid)
-        # self.bmp_status = ctk.CTkButton(master=indicator_frame, text="", fg_color="black", corner_radius=0, command=self.TogglePressure)
-
-        # self.demo_real_mode.place(relx=0, rely=0, relwidth=0.2, relheight=1)
-        # self.anemo_status.place(relx=0.2, rely=0, relwidth=0.2, relheight=1)
-        # self.temp_status.place(relx=0.4, rely=0, relwidth=0.2, relheight=1)
-        # self.humid_status.place(relx=0.6, rely=0, relwidth=0.2, relheight=1)
-        # self.bmp_status.place(relx=0.8, rely=0, relwidth=0.2, relheight=1)
-
-        # w = self.demo_real_mode.cget("width")
-        # indicator_scaling = 0.2
-        # if (self.II.w == -1 or self.II.h == -1):
-        #     self.II.setDimensions(w * indicator_scaling, w * indicator_scaling)
-        #     self.II.makeImages()
-
-        # self.demo_real_mode.configure(image = self.II.DEMO_MODE)
-        # self.anemo_status.configure(image = self.II.WIND_DISCON)
-        # self.temp_status.configure(image = self.II.TEMP_DEMO)
-        # self.humid_status.configure(image = self.II.HUMID_DEMO)
-        # self.bmp_status.configure(image = self.II.PRESSURE_DEMO)
-
         # Console Frame - For Generic Console Logs
         generic_console_frame = ctk.CTkFrame(master=self.prediction_frame)
         self.generic_textbox = ctk.CTkTextbox(master=generic_console_frame, fg_color="black", corner_radius=0)
@@ -493,7 +386,7 @@ class MainGUI():
 
         self.app.update()
 
-        # self.app.after(10, self.update)
+        self.app.after(10, self.update)
     
     def changeGraphData(self, show_data, show_corrected, plot_axis, lower_limit = 0, higher_limit = 150, data_length = 20):
         plot_data = show_data[-1 * data_length:]
@@ -511,9 +404,7 @@ class MainGUI():
         self.execute()
     
     def execute(self):
-        while True:
-            self.update()
-            time.sleep(0.5)
+        self.update()
 
 if __name__ == "__main__":
 
