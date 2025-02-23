@@ -65,9 +65,9 @@ for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
 def setPlotLimits(plot, ymin, ymax):
     plot.setYRange(ymin, ymax)
     plot.getAxis('left').setPen('k')  # Black pen for left axis
-    plot.getAxis('bottom').setPen('k') # Black pen for bottom axis
+    # plot.getAxis('bottom').setPen('k') # Black pen for bottom axis
     plot.showAxis('left', True) # Make sure the axis is visible
-    # plot.showAxis('bottom', True) # Make sure the axis is visible
+    plot.hideAxis('bottom')  # Hide the bottom (x) axis
     plot.getViewBox().setBackgroundColor('w')  # Set ViewBox background to white
 
 setPlotLimits(temp_plot, 0, 100)
