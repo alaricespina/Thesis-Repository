@@ -57,7 +57,7 @@ while running:
     try:
         update_plot()  # Call the update function
         root.update()  # Process events and update the GUI
-        time.sleep(0.25)  # Small delay to avoid excessive CPU usage
+        time.sleep(0.1)  # Small delay to avoid excessive CPU usage
     except tk.TclError:
         # Window has been destroyed
         running = False
