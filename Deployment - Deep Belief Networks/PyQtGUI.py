@@ -1,6 +1,8 @@
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QTextEdit, QSpacerItem, QGridLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QTextEdit, QSpacerItem, QGridLayout, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui  # Import QtGui
 import numpy as np
@@ -12,6 +14,8 @@ app = QApplication(sys.argv)
 # Condition
 # Local Records
 # Site Records
+# Dapat Hourly Records 
+
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -56,16 +60,66 @@ window.setWindowTitle("DeepBelief Networks - Weather Prediction")
 window.setGeometry(0, 0, 800, 400)
 mainWidget = QWidget(window)
 mainWidget.setStyleSheet("background-color: white;")
+mainWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 window.setCentralWidget(mainWidget)
 
 mainLayout = QGridLayout(mainWidget)
+
+############################################
+# Label
+############################################
+spanning_label = QLabel("Implementation of a Deep Belief Network with Sensor Correction Algorithm to predict Weather on a Raspberry Pi")
+spanning_label.setAlignment(Qt.AlignCenter)
+mainLayout.addWidget(spanning_label, 0, 0, 1, 3)
+
+############################################
+# Weather Icons
+############################################
+weatherGroupWidget = QWidget(mainWidget)
+mainLayout.addWidget(weatherGroupWidget, 1, 2, 1, 1)
+
+weatherGroupLayout = QGridLayout(weatherGroupWidget)
+
+cloudyPic = QPixmap("WeatherIcons/CLOUDY INACTIVE.png")
+rainyPic = QPixmap("WeatherIcons/RAINY INACTIVE.png")
+sunnyPic = QPixmap("WeatherIcons/SUNNY INACTIVE.png")
+rainySunnyPic = QPixmap("WeatherIcons/RAINY AND SUNNY INACTIVE.png")
+
+cloudyLabel = QLabel()
+rainyLabel = QLabel()
+sunnyLabel = QLabel()
+rainySunnyLabel = QLabel()
+cloudyLabel.setAlignment(Qt.AlignCenter)
+rainyLabel.setAlignment(Qt.AlignCenter)
+sunnyLabel.setAlignment(Qt.AlignCenter)
+rainySunnyLabel.setAlignment(Qt.AlignCenter)
+
+s = 50
+cloudyPic = cloudyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+rainyPic = rainyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+sunnyPic = sunnyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+rainySunnyPic = rainySunnyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+cloudyLabel.setPixmap(cloudyPic)
+rainyLabel.setPixmap(rainyPic)
+sunnyLabel.setPixmap(sunnyPic)
+rainySunnyLabel.setPixmap(rainySunnyPic)
+
+weatherGroupLayout.addWidget(cloudyLabel, 0, 0, 1, 1)
+weatherGroupLayout.addWidget(rainyLabel, 0, 1, 1, 1)
+weatherGroupLayout.addWidget(sunnyLabel, 1, 0, 1, 1)
+weatherGroupLayout.addWidget(rainySunnyLabel, 1, 1, 1, 1)
+
+
+
+
 
 ############################################
 # Sensor Graphs
 ############################################
 graphicsView = pg.GraphicsLayoutWidget()
 graphicsView.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-mainLayout.addWidget(graphicsView, 0, 0, 2, 2)
+mainLayout.addWidget(graphicsView, 1, 0, 2, 2)
 
 temp_plot = graphicsView.addPlot(row=0, col=0, title="Temperature (°C)")
 humid_plot = graphicsView.addPlot(row=0, col=1, title="Humidity (%)")
@@ -88,7 +142,7 @@ x4 = np.linspace(0, 10, 100)
 temp_data = np.sin(x1) if not in_board else np.zeros(100)
 humid_data = np.cos(x2) if not in_board else np.zeros(100)
 pressure_data = np.tan(x3) if not in_board else np.zeros(100)
-wind_data = np.exp(-x4) if not in_board else np.zeros(100)
+wind_data = np.sin(2*x4) if not in_board else np.zeros(100)
 
 curve1 = temp_plot.plot(x1, temp_data, pen='b', name='Temperature')
 curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
@@ -103,14 +157,34 @@ setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
 ############################################
 # Console
 ############################################
-console = QTextEdit()
+cw = QWidget(mainWidget)
+mainLayout.addWidget(cw, 2, 2, 1, 1)
+cwLayout = QVBoxLayout(cw)
+
+console = QTextEdit(cw)
 console.setReadOnly(True)  # Make it read-only
 console.setStyleSheet("background-color: black; color: white;") 
 console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) 
 console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
-mainLayout.addItem(spacer, 0, 2)
-mainLayout.addWidget(console, 1, 2)
+cwLayout.addWidget(console)
+
+bw = QWidget(cw)
+cwLayout.addWidget(bw)
+bwLayout = QHBoxLayout(bw)
+
+bs = 50
+realtimeButton = QPushButton("RT")
+hourlyButton = QPushButton("H1")
+dailyButton = QPushButton("D1")
+realtimeButton.setFixedWidth(bs)
+hourlyButton.setFixedWidth(bs)
+dailyButton.setFixedWidth(bs)
+bwLayout.addWidget(realtimeButton)
+bwLayout.addWidget(hourlyButton)
+bwLayout.addWidget(dailyButton)
+bw.setLayout(bwLayout)
+
+
 
 ############################################
 # Main Driver Function
@@ -152,7 +226,7 @@ def update_plots():
     if in_board:
         wind_data = roll_arr_and_append(wind_data, HALL.readSpeed())
     else:
-        wind_data = np.exp(-x4)
+        wind_data = np.sin(2*x4)
     curve4.setData(x4, wind_data)
     current_wind_data = wind_data[-1]
     
@@ -177,6 +251,16 @@ def update_plots():
     print(f"[{elapsed_ms:.2f} ms]\n{message}")
     # Append the message to the console
     console.setText(message)
+
+num_columns = mainLayout.columnCount()
+num_rows = mainLayout.rowCount()
+
+# Set the same stretch factor for all columns
+for column in range(num_columns):
+    mainLayout.setColumnStretch(column, 1)  # Give each column a stretch factor of 1
+
+# for row in range(num_rows):
+#     mainLayout.setRowStretch(row, 1)
 
 ############################################
 # Timer
