@@ -10,8 +10,8 @@ from datetime import datetime
 
 app = QApplication(sys.argv)
 
-# Title
-# Condition
+
+# Condition - Not Yet Predicting 
 # Local Records
 # Site Records
 # Dapat Hourly Records 
@@ -51,6 +51,24 @@ def roll_arr_and_append(arr, val):
     arr = np.roll(arr, -1)
     arr[-1] = val
     return arr
+
+def rt_button_clicked():
+    print("RT Button Clicked")
+
+def h1_button_clicked():
+    print("H1 Button Clicked")
+
+def d1_button_clicked():
+    print("D1 Button Clicked")
+
+def local_button_clicked():
+    print("Local Button is Clicked")
+
+def site_button_clicked():
+    print("Site Button is Clicked")
+
+def current_button_clicked():
+    print("Current Button Clicked")
 
 ############################################
 # Main Window
@@ -110,10 +128,6 @@ weatherGroupLayout.addWidget(rainyLabel, 0, 1, 1, 1)
 weatherGroupLayout.addWidget(sunnyLabel, 1, 0, 1, 1)
 weatherGroupLayout.addWidget(rainySunnyLabel, 1, 1, 1, 1)
 
-
-
-
-
 ############################################
 # Sensor Graphs
 ############################################
@@ -129,30 +143,6 @@ wind_plot = graphicsView.addPlot(row=1, col=1, title="Wind Speed (kph)")
 
 for plot in [temp_plot, humid_plot, pressure_plot, wind_plot]:
     plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-
-############################################
-# Seed Data
-############################################
-x1 = np.linspace(0, 10, 100)
-x2 = np.linspace(0, 10, 100)
-x3 = np.linspace(0, 10, 100)
-x4 = np.linspace(0, 10, 100)
-
-temp_data = np.sin(x1) if not in_board else np.zeros(100)
-humid_data = np.cos(x2) if not in_board else np.zeros(100)
-pressure_data = np.tan(x3) if not in_board else np.zeros(100)
-wind_data = np.sin(2*x4) if not in_board else np.zeros(100)
-
-curve1 = temp_plot.plot(x1, temp_data, pen='b', name='Temperature')
-curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
-curve3 = pressure_plot.plot(x3, pressure_data, pen='b', name='Pressure')
-curve4 = wind_plot.plot(x4, wind_data, pen='b', name='Wind Speed')
-
-setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
-setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
-setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
-setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
 
 ############################################
 # Console
@@ -184,6 +174,57 @@ bwLayout.addWidget(hourlyButton)
 bwLayout.addWidget(dailyButton)
 bw.setLayout(bwLayout)
 
+
+
+############################################
+# Frame Nav
+############################################
+fbs = 50
+frameControlsWidget = QWidget(mainWidget)
+fCWLayout = QHBoxLayout(frameControlsWidget)
+frameControlsWidget.setLayout(fCWLayout)
+
+localButton = QPushButton("Local")
+siteButton = QPushButton("Site")
+currentButton = QPushButton("Current")
+localButton.clicked.connect(local_button_clicked)
+siteButton.clicked.connect(site_button_clicked)
+currentButton.clicked.connect(current_button_clicked)   
+localButton.setFixedWidth(fbs)
+siteButton.setFixedWidth(fbs)
+currentButton.setFixedWidth(fbs)
+fCWLayout.addWidget(currentButton)
+fCWLayout.addWidget(localButton)
+fCWLayout.addWidget(siteButton)
+
+mainLayout.addWidget(frameControlsWidget, 3, 0, 1, 3)
+
+
+
+
+
+############################################
+# Seed Data
+############################################
+x1 = np.linspace(0, 10, 100)
+x2 = np.linspace(0, 10, 100)
+x3 = np.linspace(0, 10, 100)
+x4 = np.linspace(0, 10, 100)
+
+temp_data = np.sin(x1) if not in_board else np.zeros(100)
+humid_data = np.cos(x2) if not in_board else np.zeros(100)
+pressure_data = np.tan(x3) if not in_board else np.zeros(100)
+wind_data = np.sin(2*x4) if not in_board else np.zeros(100)
+
+curve1 = temp_plot.plot(x1, temp_data, pen='b', name='Temperature')
+curve2 = humid_plot.plot(x2, humid_data, pen='b', name='Humidity')
+curve3 = pressure_plot.plot(x3, pressure_data, pen='b', name='Pressure')
+curve4 = wind_plot.plot(x4, wind_data, pen='b', name='Wind Speed')
+
+setPlotLimits(temp_plot, temp_data.min() * 0.9, temp_data.max() * 1.1)
+setPlotLimits(humid_plot, humid_data.min() * 0.9, humid_data.max() * 1.1)
+setPlotLimits(pressure_plot, pressure_data.min() * 0.9, pressure_data.max() * 1.1)
+setPlotLimits(wind_plot, wind_data.min() * 0.9, wind_data.max() * 1.1)
 
 
 ############################################
@@ -248,7 +289,7 @@ def update_plots():
 
     # Create the message
     message = f"Temperature: {current_temp_data:.2f}°C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}mBar\nWind:{current_wind_data:.2f}kph"
-    print(f"[{elapsed_ms:.2f} ms]\n{message}")
+    # print(f"[{elapsed_ms:.2f} ms]\n{message}")
     # Append the message to the console
     console.setText(message)
 
