@@ -2,7 +2,7 @@ import sys
 import os 
 import pandas as pd 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QTextEdit, QSpacerItem, QGridLayout, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QSizePolicy, QTextEdit, QSpacerItem, QGridLayout, QVBoxLayout, QHBoxLayout, QPushButton, QTabWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import pyqtgraph as pg
@@ -10,6 +10,7 @@ from pyqtgraph.Qt import QtCore, QtGui  # Import QtGui
 import numpy as np
 from random import randint 
 from datetime import datetime
+from CalendarTest import CalendarWidget
 
 # Condition - Not Yet Predicting 
 # Local Records
@@ -77,31 +78,37 @@ class HelperFunctions():
 class MainGUI():
     def __init__(self):
         self.last_update_time = datetime.now()
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.mainDriver)
+        self.timer.start(250)
         self.initializeMainWindow()
         self.readHistoricalData()
         self.initializeCurrentFrame()
-        # self.initializeLocalFrame()
-        # self.initializeSiteFrame()
-        self.initializeFrameNavigation()
+        self.initializeSiteFrame()
+        self.initializeLocalFrame()
         self.generateInitialData()
         self.adjustGridWidths()
         # self.bindTimer()
         # self.show()
+        
+        
     
     def readHistoricalData(self):
         all_data = pd.DataFrame()
-        for file in os.listdir("Data"):
-            df = pd.read_csv(os.path.join("Data", file))
+        for file in os.listdir("Data/Yearly"):
+            df = pd.read_csv(os.path.join("Data/Yearly", file))
             all_data = pd.concat([all_data, df], axis=0)
 
         print(all_data.describe())
         print(all_data.columns)
 
-        self.historical_temperature_data = all_data['Temperature'].copy()
-        self.historical_humidity_data = all_data['Humidity'].copy()
-        self.historical_pressure_data = all_data['Pressure'].copy()
-        self.historical_wind_data = all_data['Wind Speed'].copy()
+        self.historical_temperature_data = all_data['temp'].copy()
+        self.historical_humidity_data = all_data['humidity'].copy()
+        self.historical_pressure_data = all_data['sealevelpressure'].copy()
+        self.historical_wind_data = all_data['windspeed'].copy()
+        self.raw_df = all_data[["datetime","conditions", "tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]].copy()
 
+        self.pred_df = pd.read_csv(os.path.join("Data", "Model Output.csv"))
 
 
     def adjustGridWidths(self):
@@ -114,37 +121,25 @@ class MainGUI():
         self.window = QMainWindow()
         self.window.setWindowTitle("DeepBelief Networks - Weather Prediction")
         self.window.setGeometry(0, 0, 800, 400)
-        self.mainWidget = QWidget(self.window)
+
+        self.tabWidget = QTabWidget()
+        self.window.setCentralWidget(self.tabWidget)
+        self.tabWidget.setTabPosition(QtWidgets.QTabWidget.South)
+
+        self.mainWidget = QWidget()
+        self.localWidget = QWidget()
+        self.siteWidget = QWidget()
+
         self.mainWidget.setStyleSheet("background-color: white;")
         self.mainWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.window.setCentralWidget(self.mainWidget)
+        
 
         self.mainLayout = QGridLayout(self.mainWidget)
 
-    # Navigation Frame
-    def initializeFrameNavigation(self):
-        ############################################
-        # Frame Nav
-        ############################################
-        fbs = 50
-        frameControlsWidget = QWidget(self.mainWidget)
-        fCWLayout = QHBoxLayout(frameControlsWidget)
-        frameControlsWidget.setLayout(fCWLayout)
+        self.tabWidget.addTab(self.mainWidget, "Current")
+        self.tabWidget.addTab(self.localWidget, "Local")
+        self.tabWidget.addTab(self.siteWidget, "Site")
 
-        localButton = QPushButton("Local")
-        siteButton = QPushButton("Site")
-        currentButton = QPushButton("Current")
-        # localButton.clicked.connect(local_button_clicked)
-        # siteButton.clicked.connect(site_button_clicked)
-        # currentButton.clicked.connect(current_button_clicked)   
-        localButton.setFixedWidth(fbs)
-        siteButton.setFixedWidth(fbs)
-        currentButton.setFixedWidth(fbs)
-        fCWLayout.addWidget(currentButton)
-        fCWLayout.addWidget(localButton)
-        fCWLayout.addWidget(siteButton)
-
-        self.mainLayout.addWidget(frameControlsWidget, 3, 0, 1, 3)
 
     # Current - Weather Prediction Frame
     def initializeCurrentWeatherPredictionFrame(self):
@@ -161,14 +156,14 @@ class MainGUI():
         sunnyPic = QPixmap("WeatherIcons/SUNNY INACTIVE.png")
         rainySunnyPic = QPixmap("WeatherIcons/RAINY AND SUNNY INACTIVE.png")
 
-        cloudyLabel = QLabel()
-        rainyLabel = QLabel()
-        sunnyLabel = QLabel()
-        rainySunnyLabel = QLabel()
-        cloudyLabel.setAlignment(Qt.AlignCenter)
-        rainyLabel.setAlignment(Qt.AlignCenter)
-        sunnyLabel.setAlignment(Qt.AlignCenter)
-        rainySunnyLabel.setAlignment(Qt.AlignCenter)
+        self.cloudyLabel = QLabel()
+        self.rainyLabel = QLabel()
+        self.sunnyLabel = QLabel()
+        self.rainySunnyLabel = QLabel()
+        self.cloudyLabel.setAlignment(Qt.AlignCenter)
+        self.rainyLabel.setAlignment(Qt.AlignCenter)
+        self.sunnyLabel.setAlignment(Qt.AlignCenter)
+        self.rainySunnyLabel.setAlignment(Qt.AlignCenter)
 
         s = 50
         cloudyPic = cloudyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -176,15 +171,15 @@ class MainGUI():
         sunnyPic = sunnyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         rainySunnyPic = rainySunnyPic.scaled(s, s, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-        cloudyLabel.setPixmap(cloudyPic)
-        rainyLabel.setPixmap(rainyPic)
-        sunnyLabel.setPixmap(sunnyPic)
-        rainySunnyLabel.setPixmap(rainySunnyPic)
+        self.cloudyLabel.setPixmap(cloudyPic)
+        self.rainyLabel.setPixmap(rainyPic)
+        self.sunnyLabel.setPixmap(sunnyPic)
+        self.rainySunnyLabel.setPixmap(rainySunnyPic)
 
-        weatherGroupLayout.addWidget(cloudyLabel, 0, 0, 1, 1)
-        weatherGroupLayout.addWidget(rainyLabel, 0, 1, 1, 1)
-        weatherGroupLayout.addWidget(sunnyLabel, 1, 0, 1, 1)
-        weatherGroupLayout.addWidget(rainySunnyLabel, 1, 1, 1, 1)
+        weatherGroupLayout.addWidget(self.cloudyLabel, 0, 0, 1, 1)
+        weatherGroupLayout.addWidget(self.rainyLabel, 0, 1, 1, 1)
+        weatherGroupLayout.addWidget(self.sunnyLabel, 1, 0, 1, 1)
+        weatherGroupLayout.addWidget(self.rainySunnyLabel, 1, 1, 1, 1)
 
     # Current - Sensor Frame
     def initializeCurrentSensorFrame(self):
@@ -220,21 +215,21 @@ class MainGUI():
         self.console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         cwLayout.addWidget(self.console)
 
-        bw = QWidget(cw)
-        cwLayout.addWidget(bw)
-        bwLayout = QHBoxLayout(bw)
+        # bw = QWidget(cw)
+        # cwLayout.addWidget(bw)
+        # bwLayout = QHBoxLayout(bw)
 
-        bs = 50
-        realtimeButton = QPushButton("RT")
-        hourlyButton = QPushButton("H1")
-        dailyButton = QPushButton("D1")
-        realtimeButton.setFixedWidth(bs)
-        hourlyButton.setFixedWidth(bs)
-        dailyButton.setFixedWidth(bs)
-        bwLayout.addWidget(realtimeButton)
-        bwLayout.addWidget(hourlyButton)
-        bwLayout.addWidget(dailyButton)
-        bw.setLayout(bwLayout)
+        # bs = 50
+        # realtimeButton = QPushButton("RT")
+        # hourlyButton = QPushButton("H1")
+        # dailyButton = QPushButton("D1")
+        # realtimeButton.setFixedWidth(bs)
+        # hourlyButton.setFixedWidth(bs)
+        # dailyButton.setFixedWidth(bs)
+        # bwLayout.addWidget(realtimeButton)
+        # bwLayout.addWidget(hourlyButton)
+        # bwLayout.addWidget(dailyButton)
+        # bw.setLayout(bwLayout)
 
     # Calls :
     # Weather Prediction Frame
@@ -244,20 +239,32 @@ class MainGUI():
         ############################################
         # Label
         ############################################
+        self.siteActive = False
+        self.localActive = False
+        self.currentActive = True
+        
         spanning_label = QLabel("Implementation of a Deep Belief Network with Sensor Correction Algorithm to predict Weather on a Raspberry Pi")
         spanning_label.setAlignment(Qt.AlignCenter)
         self.mainLayout.addWidget(spanning_label, 0, 0, 1, 3)
 
-        self.initializeCurrentWeatherPredictionFrame()
+        # self.initializeCurrentWeatherPredictionFrame()
         self.initializeCurrentSensorFrame()
         self.initializeCurrentConsoleFrame()
-
-    def initializeLocalFrame(self):
-        pass 
-
+        self.adjustGridWidths()
+        
     def initializeSiteFrame(self):
-        pass
+        C = CalendarWidget(self.raw_df)
+        self.siteLayout = QHBoxLayout(self.siteWidget)
+        self.siteWidget.setLayout(self.siteLayout)
+        self.siteLayout.addWidget(C)
+
     
+    def initializeLocalFrame(self):
+        C = CalendarWidget(self.pred_df)
+        self.localLayout = QHBoxLayout(self.localWidget)
+        self.localWidget.setLayout(self.localLayout)
+        self.localLayout.addWidget(C)
+
     # Helper
     def generateFakeData(size, minVal, maxVal):
         return 
@@ -302,11 +309,7 @@ class MainGUI():
         HelperFunctions.setPlotLimits(self.pressure_plot, self.pressureData.min() * 0.9, self.pressureData.max() * 1.1)
         HelperFunctions.setPlotLimits(self.wind_plot, self.windData.min() * 0.9, self.windData.max() * 1.1)
 
-    # Drives:
-    # Current Frame - Sensor Graph [Real Time, 1 Hour, 1 Day] - Weather Prediction - Console
-    # Local Frame - 
-    def mainDriver(self):    
-
+    def currentUpdate(self):
         # Measure time difference
         now = datetime.now()
         time_diff = now - self.last_update_time
@@ -317,7 +320,6 @@ class MainGUI():
         self.p_x = HelperFunctions.rollArrayAndIncrease(self.p_x)
         self.w_x = HelperFunctions.rollArrayAndIncrease(self.w_x)
         
-
         if in_board:
             current_temp_data = DHT.readTemperature()
             current_humid_data = DHT.readHumidity()
@@ -353,9 +355,24 @@ class MainGUI():
         # Append the message to the console
         self.console.setText(message)
 
+        cloudyPic = QPixmap("WeatherIcons/CLOUDY INACTIVE.png")
+        rainyPic = QPixmap("WeatherIcons/RAINY INACTIVE.png")
+        sunnyPic = QPixmap("WeatherIcons/SUNNY INACTIVE.png")
+        rainySunnyPic = QPixmap("WeatherIcons/RAINY AND SUNNY INACTIVE.png")
+        cloudyActivepic = QPixmap("WeatherIcons/CLOUDY ACTIVE.png")
+        rainyActivepic = QPixmap("WeatherIcons/RAINY ACTIVE.png")
+        sunnyActivepic = QPixmap("WeatherIcons/SUNNY ACTIVE.png")
+        rainySunnyActivepic = QPixmap("WeatherIcons/RAINY AND SUNNY ACTIVE.png")
 
 
-    def show(self):
+    # Drives:
+    # Current Frame - Sensor Graph [Real Time, 1 Hour, 1 Day] - Weather Prediction - Console
+    # Local Frame - 
+    def mainDriver(self): 
+        self.currentUpdate()
+        
+
+    def show(self):  
         self.window.show()
         sys.exit(app.exec_())
 
@@ -373,7 +390,4 @@ if __name__ == "__main__":
             exit()
 
     A = MainGUI()
-    timer = QtCore.QTimer()
-    timer.timeout.connect(A.mainDriver)
-    timer.start(250)
     A.show()
