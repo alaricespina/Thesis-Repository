@@ -87,7 +87,7 @@ class MainGUI():
         self.initializeSiteFrame()
         self.initializeLocalFrame()
         self.generateInitialData()
-        self.adjustGridWidths()
+        # self.adjustGridWidths()
         # self.bindTimer()
         # self.show()
         
@@ -120,7 +120,8 @@ class MainGUI():
     def initializeMainWindow(self) -> None:
         self.window = QMainWindow()
         self.window.setWindowTitle("DeepBelief Networks - Weather Prediction")
-        self.window.setGeometry(0, 0, 800, 400)
+        # self.window.setGeometry(0, 0, 800, 400)
+        self.window.setMinimumSize(600, 400)
 
         self.tabWidget = QTabWidget()
         self.window.setCentralWidget(self.tabWidget)
@@ -204,16 +205,18 @@ class MainGUI():
         ############################################
         # Console
         ############################################
-        cw = QWidget(self.mainWidget)
-        self.mainLayout.addWidget(cw, 2, 2, 1, 1)
-        cwLayout = QVBoxLayout(cw)
+        # cw = QWidget(self.mainWidget)
+        # self.mainLayout.addWidget(cw, 2, 2, 1, 1)
+        # cwLayout = QVBoxLayout(cw)
 
-        self.console = QTextEdit(cw)
-        self.console.setReadOnly(True)  # Make it read-only
-        self.console.setStyleSheet("background-color: black; color: white;") 
-        self.console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) 
-        self.console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        cwLayout.addWidget(self.console)
+        # self.console = QTextEdit(self.mainWidget)
+        # self.console.setReadOnly(False)  # Make it read-only
+        # self.console.setStyleSheet("background-color: black; color: white;") 
+        self.console = QLabel("Info Here")
+        self.mainLayout.addWidget(self.console, 1, 2)
+        # self.console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) 
+        # self.console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        # cwLayout.addWidget(self.console)
 
         # bw = QWidget(cw)
         # cwLayout.addWidget(bw)
@@ -250,7 +253,7 @@ class MainGUI():
         # self.initializeCurrentWeatherPredictionFrame()
         self.initializeCurrentSensorFrame()
         self.initializeCurrentConsoleFrame()
-        self.adjustGridWidths()
+        # self.adjustGridWidths()
         
     def initializeSiteFrame(self):
         C = CalendarWidget(self.raw_df)
@@ -353,6 +356,7 @@ class MainGUI():
         message = f"Temperature: {current_temp_data:.2f}°C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}mBar\nWind:{current_wind_data:.2f}kph"
         print(f"[{elapsed_ms:.2f} ms] - {message.replace('\n', ' ')}")
         # Append the message to the console
+        # self.console.setText(message)
         self.console.setText(message)
 
         cloudyPic = QPixmap("WeatherIcons/CLOUDY INACTIVE.png")
