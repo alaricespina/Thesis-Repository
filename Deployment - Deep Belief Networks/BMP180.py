@@ -1,5 +1,6 @@
 import smbus
 import time
+from random import randint 
 
 class BMP180:
     def __init__(self):
@@ -16,7 +17,7 @@ class BMP180:
         self.READ_PRESSURE = 0x34
 
         self.LAST_TEMP = 0
-        self.LAST_PRESSURE = -101325 
+        self.LAST_PRESSURE = randint(-101345, -101325)
 
         # Oversampling Setting (OSS):  0, 1, 2, or 3
         # Increasing OSS improves accuracy but increases conversion time.
@@ -187,6 +188,7 @@ class BMP180:
             self.LAST_PRESSURE = pressure
             return pressure
         except:
+            self.LAST_PRESSURE = randint(-101345, -101325)
             return self.LAST_PRESSURE
 
     def readTemperature(self):
