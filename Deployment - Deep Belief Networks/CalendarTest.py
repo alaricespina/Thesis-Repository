@@ -57,7 +57,11 @@ class CalendarWidget(QtWidgets.QWidget):
 
         # Information Label
         self.info_label = QtWidgets.QLabel("Select a date to see weather information.")
+        font = QtGui.QFont()
+        font.setPointSize(6)
+
         self.info_label.setWordWrap(True)  # Allow text to wrap
+        self.info_label.setFont(font)
         self.right_panel.addWidget(self.info_label)
 
         # Calendar Widget (Left Panel) - Swapped
