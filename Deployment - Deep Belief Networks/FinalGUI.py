@@ -53,7 +53,12 @@ class HelperFunctions():
         if ymin == 0 and ymax == 0:
             return 
         
-        plot.setYRange(ymin, ymax)
+        try:
+            plot.setYRange(ymin, ymax)
+        except Exception as E:
+            print("Cannot set to", ymin, ymax)
+        
+        
         plot.getAxis('left').setPen('k')
         plot.showAxis('left', True)
         plot.getAxis('bottom').setTicks([[]])
