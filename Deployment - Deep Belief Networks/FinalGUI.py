@@ -292,10 +292,10 @@ class MainGUI():
             self.pressureData = np.random.randint(0, 100, 100)
             self.windData = np.random.randint(0, 100, 100)
         else:
-            self.temperatureData = np.zeroes(100)
-            self.humidityData = np.zeroes(100)
-            self.pressureData = np.zeroes(100)
-            self.windData = np.zeroes(100)
+            self.temperatureData = np.zeros(100)
+            self.humidityData = np.zeros(100)
+            self.pressureData = np.zeros(100)
+            self.windData = np.zeros(100)
 
         self.t_x = self.generateFakeIndex(self.temperatureData)
         self.h_x = self.generateFakeIndex(self.humidityData)
