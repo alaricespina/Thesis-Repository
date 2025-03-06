@@ -4,6 +4,9 @@ import pandas as pd
 import calendar
 from datetime import date
 
+calendar.setfirstweekday(calendar.SUNDAY)
+print(list(calendar.day_name))
+
 class CalendarWidget(QtWidgets.QWidget):
     def __init__(self, df, parent=None):
         super().__init__(parent)
@@ -164,6 +167,7 @@ class CalendarWidget(QtWidgets.QWidget):
         self.month_label.setText(calendar.month_name[month] + " " + str(year))
 
         cal = calendar.Calendar()
+        cal.setfirstweekday(calendar.SUNDAY)
         month_days = cal.monthdayscalendar(year, month)
 
         # Clear previous calendar
@@ -182,7 +186,7 @@ class CalendarWidget(QtWidgets.QWidget):
                     # print([date], date in self.df["datetime"].tolist())
                     cell_button.setText(str(day))
                     cell_button.setProperty("date", date)
-                    self.apply_weather_color(cell_button, date)                    
+                    self.apply_weather_color(cell_button, date)
                 else:
                     cell_button.setText("")
                     cell_button.setProperty("date", None)
@@ -279,7 +283,7 @@ class CalendarWidget(QtWidgets.QWidget):
 # df = pd.DataFrame(data, index=dates)
 
 if __name__ == "__main__":
-    df = pd.read_csv("Data/Concatenated Data.csv")
+    df = pd.read_csv("Data/Model Output.csv")
     print(df)
     app = QtWidgets.QApplication(sys.argv)
     window = CalendarWidget(df)
