@@ -354,7 +354,7 @@ class MainGUI():
 
         # Create the message
         message = f"Temperature: {current_temp_data:.2f}°C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}mBar\nWind:{current_wind_data:.2f}kph"
-        print(f"[{elapsed_ms:.2f} ms] - {message.replace('\n', ' ')}")
+        # print(f"[{elapsed_ms:.2f} ms] - {message.replace('\n', ' ')}")
         # Append the message to the console
         # self.console.setText(message)
         self.console.setText(message)
