@@ -252,8 +252,9 @@ class MainGUI():
         self.siteActive = False
         self.localActive = False
         self.currentActive = True
-        
+
         spanning_label = QLabel("Implementation of a Deep Belief Network with Sensor Correction Algorithm to predict Weather on a Raspberry Pi")
+        spanning_label.setWordWrap(True)
         spanning_label.setAlignment(Qt.AlignCenter)
         self.mainLayout.addWidget(spanning_label, 0, 0, 1, 3)
 
