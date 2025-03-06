@@ -66,6 +66,8 @@ class HelperFunctions():
 
     @staticmethod
     def rollArrayAndAppend(arr, val):
+        if val == np.nan:
+            return arr
         arr = np.roll(arr, -1)
         arr[-1] = val
         return arr
