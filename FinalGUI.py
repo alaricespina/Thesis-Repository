@@ -284,7 +284,7 @@ class MainGUI():
     def generateFakeData(size, minVal, maxVal):
         return 
     
-    def generateFakeIndex(self, arr):
+    def generateIndex(self, arr):
         return [i for i in range(len(arr))]
     
 
@@ -299,22 +299,15 @@ class MainGUI():
         self.pressureData = []
         self.windData = []
 
+        self.temperatureData = np.zeros(100)
+        self.humidityData = np.zeros(100)
+        self.pressureData = np.zeros(100)
+        self.windData = np.zeros(100)
 
-        if not in_board:
-            self.temperatureData = np.random.randint(0, 100, 100)
-            self.humidityData = np.random.randint(0, 100, 100)
-            self.pressureData = np.random.randint(0, 100, 100)
-            self.windData = np.random.randint(0, 100, 100)
-        else:
-            self.temperatureData = np.zeros(100)
-            self.humidityData = np.zeros(100)
-            self.pressureData = np.zeros(100)
-            self.windData = np.zeros(100)
-
-        self.t_x = self.generateFakeIndex(self.temperatureData)
-        self.h_x = self.generateFakeIndex(self.humidityData)
-        self.p_x = self.generateFakeIndex(self.pressureData)
-        self.w_x = self.generateFakeIndex(self.windData)
+        self.t_x = self.generateIndex(self.temperatureData)
+        self.h_x = self.generateIndex(self.humidityData)
+        self.p_x = self.generateIndex(self.pressureData)
+        self.w_x = self.generateIndex(self.windData)
 
         self.temperature_curve = self.temp_plot.plot(self.t_x, self.temperatureData, pen='b', name='Temperature')
         self.humidity_curve = self.humid_plot.plot(self.h_x, self.humidityData, pen='b', name='Humidity')
@@ -333,21 +326,27 @@ class MainGUI():
         self.p_x = HelperFunctions.rollArrayAndIncrease(self.p_x)
         self.w_x = HelperFunctions.rollArrayAndIncrease(self.w_x)
         
-        if in_board:
-            current_temp_data = DHT.readTemperature()
-            current_humid_data = DHT.readHumidity()
-            current_pressure_data = BMP.readPressure() * -1 / 1000 * 10
-            current_wind_data = HALL.readSpeed()
-        else:
-            current_temp_data = randint(1, 100)
-            current_humid_data = randint(1, 100)
-            current_pressure_data = randint(1, 100)
-            current_wind_data = randint(1, 100)
+        # Custom Classes (Already Corrected for Real Time)
+        current_temp_data = DHT.readTemperature()
+        current_humid_data = DHT.readHumidity()
+        current_pressure_data = BMP.readPressure()
+        current_wind_data = HALL.readSpeed()
 
         self.temperatureData = HelperFunctions.rollArrayAndAppend(self.temperatureData, current_temp_data)
         self.humidityData = HelperFunctions.rollArrayAndAppend(self.humidityData, current_humid_data)
         self.pressureData = HelperFunctions.rollArrayAndAppend(self.pressureData, current_pressure_data)
         self.windData = HelperFunctions.rollArrayAndAppend(self.windData, current_wind_data)
+
+        # Update last_update_time
+        now = datetime.now()
+        self.last_update_time = now
+
+        # Prediction Times
+        start_time = datetime.time(12, 0, 0)  # 12:00:00
+        end_time = datetime.time(12, 5, 0)    # 12:05:00
+        if (start_time <= now.time() <= end_time):
+            self.predictWeatherCondition()
+            self.processPrediction()
 
         self.temperature_curve.setData(self.t_x, self.temperatureData)
         self.humidity_curve.setData(self.h_x, self.humidityData)
@@ -358,22 +357,15 @@ class MainGUI():
         HelperFunctions.setPlotLimits(self.humid_plot, self.humidityData.min() * 0.9, self.humidityData.max() * 1.1)
         HelperFunctions.setPlotLimits(self.pressure_plot, self.pressureData.min() * 0.9, self.pressureData.max() * 1.1)
         HelperFunctions.setPlotLimits(self.wind_plot, self.windData.min() * 0.9, self.windData.max() * 1.1)
-
-        # Update last_update_time
-        now = datetime.now()
-        self.last_update_time = now
-
+        
         # Create the message
         message = f"Temperature: {current_temp_data:.2f}°C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}mBar\nWind:{current_wind_data:.2f}kph"
-        # print(f"[{elapsed_ms:.2f} ms] - {message.replace('\n', ' ')}")
-        # Append the message to the console
-        # self.console.setText(message)
         self.console.setText(message)
 
         
 
     def prepareData(self):
-        ["tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]
+        # 1 Day
         recordLength = 60 * 60 * 24 - 1
         maxTempData = [self.temperatureData.max()]  * recordLength
         minTempData = [self.temperatureData.min()]  * recordLength
@@ -394,6 +386,7 @@ class MainGUI():
         return inputXData
          
     def predictWeatherCondition(self):
+        # tf.keras.model.load_model("FinalDBNModel.keras") -> self.dbn_model
         self.predictionOutput = self.dbn_model.predict(self.prepareData())
         
 
