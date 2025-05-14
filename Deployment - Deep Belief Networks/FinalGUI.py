@@ -9,10 +9,11 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui  # Import QtGui
 import numpy as np
 from random import randint 
-from datetime import datetime
-from CalendarTest import CalendarWidget
+from datetime import datetime, date, time
+from CalendarWidgetClass import CalendarWidget
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
 from tensorflow.keras.models import load_model
+import joblib 
 
 
 # Condition - Not Yet Predicting 
@@ -96,11 +97,14 @@ class MainGUI():
         self.initializeCurrentFrame()
         self.initializeSiteFrame()
         self.initializeLocalFrame()
+        # self.initializeHourlyFrame()
+        self.initializeTrueFrame()
         self.generateInitialData()
-        self.dbn_model = load_model("DBNFinalModel.keras")
+        self.dbn_model = joblib.load("FinalDBNRFCModel.pkl")
         # self.adjustGridWidths()
         # self.bindTimer()
         # self.show()
+        self.predicted_Flag = True
         
         
     
@@ -110,8 +114,10 @@ class MainGUI():
             df = pd.read_csv(os.path.join("Data/Yearly", file))
             all_data = pd.concat([all_data, df], axis=0)
 
-        print(all_data.describe())
-        print(all_data.columns)
+        print("[Start Up] Getting Historical Data")
+
+        # print(all_data.describe())
+        # print(all_data.columns)
 
         self.historical_temperature_data = all_data['temp'].copy()
         self.historical_humidity_data = all_data['humidity'].copy()
@@ -119,7 +125,8 @@ class MainGUI():
         self.historical_wind_data = all_data['windspeed'].copy()
         self.raw_df = all_data[["datetime","conditions", "tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]].copy()
 
-        self.pred_df = pd.read_csv(os.path.join("Data", "Model Output.csv"))
+        # self.pred_df = pd.read_csv(os.path.join("Data", "Model Output.csv"))
+        self.pred_df = pd.read_csv("Data/April PREDICTIONS.csv")
 
 
     def adjustGridWidths(self):
@@ -140,7 +147,9 @@ class MainGUI():
 
         self.mainWidget = QWidget()
         self.localWidget = QWidget()
+        self.PAGASAWidget = QWidget()
         self.siteWidget = QWidget()
+        # self.hourlyWidget = QWidget()
 
         self.mainWidget.setStyleSheet("background-color: white;")
         self.mainWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -148,9 +157,11 @@ class MainGUI():
 
         self.mainLayout = QGridLayout(self.mainWidget)
 
-        self.tabWidget.addTab(self.mainWidget, "Current")
-        self.tabWidget.addTab(self.localWidget, "Local")
-        self.tabWidget.addTab(self.siteWidget, "Site")
+        self.tabWidget.addTab(self.mainWidget, "Current - Sensor Data")
+        self.tabWidget.addTab(self.localWidget, "[Model] Local Predictions")
+        self.tabWidget.addTab(self.PAGASAWidget, "[PAGASA] Weather Conditions")
+        # self.tabWidget.addTab(self.hourlyWidget, "Hourly Sensor Data")
+        self.tabWidget.addTab(self.siteWidget, "Historical Predictions")
 
 
     # Current - Weather Prediction Frame
@@ -224,7 +235,7 @@ class MainGUI():
         # self.console.setReadOnly(False)  # Make it read-only
         # self.console.setStyleSheet("background-color: black; color: white;") 
         self.console = QLabel("Info Here")
-        self.mainLayout.addWidget(self.console, 1, 2)
+        self.mainLayout.addWidget(self.console, 1, 2, 2, 1)
         # self.console.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff) 
         # self.console.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         # cwLayout.addWidget(self.console)
@@ -267,6 +278,10 @@ class MainGUI():
         self.initializeCurrentConsoleFrame()
         # self.adjustGridWidths()
         
+   
+    def initializeHourlyFrame(self):
+        return 
+
     def initializeSiteFrame(self):
         C = CalendarWidget(self.raw_df)
         self.siteLayout = QHBoxLayout(self.siteWidget)
@@ -275,15 +290,18 @@ class MainGUI():
 
     
     def initializeLocalFrame(self):
-        C = CalendarWidget(self.pred_df)
+        C = CalendarWidget(self.pred_df, "predictionsClass", False)
         self.localLayout = QHBoxLayout(self.localWidget)
         self.localWidget.setLayout(self.localLayout)
         self.localLayout.addWidget(C)
 
-    # Helper
-    def generateFakeData(size, minVal, maxVal):
-        return 
+    def initializeTrueFrame(self):
+        C = CalendarWidget(self.pred_df, "conditionsClass", False)
+        self.trueLayout = QHBoxLayout(self.PAGASAWidget)
+        self.PAGASAWidget.setLayout(self.trueLayout)
+        self.trueLayout.addWidget(C)
     
+
     def generateFakeIndex(self, arr):
         return [i for i in range(len(arr))]
     
@@ -359,21 +377,49 @@ class MainGUI():
         HelperFunctions.setPlotLimits(self.pressure_plot, self.pressureData.min() * 0.9, self.pressureData.max() * 1.1)
         HelperFunctions.setPlotLimits(self.wind_plot, self.windData.min() * 0.9, self.windData.max() * 1.1)
 
-        # Update last_update_time
-        now = datetime.now()
-        self.last_update_time = now
+        
+
+        
+
+        currentMaxTemp = self.temperatureData.max()
+        currentMinTemp = self.temperatureData.min()
+        currentMaxHumid = self.humidityData.max()
+        currentMinHumid = self.humidityData.min()
+        currentMaxPressure = self.pressureData.max()
+        currentMinPressure = self.pressureData.min()
+        currentMaxWind = self.windData.max()
+        currentMinWind = self.windData.min()
 
         # Create the message
-        message = f"Temperature: {current_temp_data:.2f}°C\nHumidity: {current_humid_data:.2f}%\nPressure:{current_pressure_data:.2f}mBar\nWind:{current_wind_data:.2f}kph"
+        message = (f"Temperature: {current_temp_data:.2f}°C\n"
+                   + f"Max: {currentMaxTemp:.2f}°C\n"
+                   + f"Min: {currentMinTemp:.2f}°C\n\n"
+                   + f"Humidity: {current_humid_data:.2f}%\n"
+                   + f"Max: {currentMaxHumid:.2f}%\n"
+                   + f"Min: {currentMinHumid:.2f}%\n\n"
+                   + f"Pressure:{current_pressure_data:.2f}mBar\n"
+                   + f"Max: {currentMaxPressure:.2f}mBar\n"
+                   + f"Min: {currentMinPressure:.2f}mBar\n\n"
+                   + f"\nWind:{current_wind_data:.2f}kph\n"
+                   + f"Max: {currentMaxWind:.2f}kph\n"
+                   + f"Min: {currentMinWind:.2f}kph\n"
+                   )
+        
         # print(f"[{elapsed_ms:.2f} ms] - {message.replace('\n', ' ')}")
         # Append the message to the console
         # self.console.setText(message)
         self.console.setText(message)
 
+        # Update last_update_time
+        now = datetime.now()
+        self.last_update_time = now
+        if time(0, 0, 0) <= now.time() <= time(0, 0, 1):
+            self.processPrediction()
+
         
 
     def prepareData(self):
-        ["tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]
+        # ["tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]
         recordLength = 60 * 60 * 24 - 1
         maxTempData = [self.temperatureData.max()]  * recordLength
         minTempData = [self.temperatureData.min()]  * recordLength
@@ -393,14 +439,21 @@ class MainGUI():
         inputXData = minmax_scale(inputXData, feature_range = (0, 1))
         return inputXData
          
-    def predictWeatherCondition(self):
-        self.predictionOutput = self.dbn_model.predict(self.prepareData())
-        
 
     def processPrediction(self):
         weatherConditions = ["Cloudy", "Rainy", "Sunny", "Windy"]
+        self.predictionOutput = self.dbn_model.predict(self.prepareData())
         self.predictionClass = weatherConditions[np.argmax(self.predictionOutput, axis = 1)]
-
+        newData = {
+            "datetime" : date.today().strftime("%m/%d/%Y"),
+            "sensor_windspeed" : np.mean(self.windData[self.windData != 0]),
+            "sensor_pressure" : np.mean(self.pressureData),
+            "sensor_temperature" : np.mean(self.temperatureData),
+            "sensor_humidity" : np.mean(self.humidity),
+            "predictions" : self.predictionOutput,
+            "predictionsClass" : self.predictionClass
+        }
+        self.pred_df = pd.concat([self.pred_df, newData], ignore_index = True)     
 
     # Drives:
     # Current Frame - Sensor Graph [Real Time, 1 Hour, 1 Day] - Weather Prediction - Console
