@@ -400,7 +400,7 @@ class MainGUI():
                    + f"Pressure:{current_pressure_data:.2f}mBar\n"
                    + f"Max: {currentMaxPressure:.2f}mBar\n"
                    + f"Min: {currentMinPressure:.2f}mBar\n\n"
-                   + f"\nWind:{current_wind_data:.2f}kph\n"
+                   + f"Wind:{current_wind_data:.2f}kph\n"
                    + f"Max: {currentMaxWind:.2f}kph\n"
                    + f"Min: {currentMinWind:.2f}kph\n"
                    )
