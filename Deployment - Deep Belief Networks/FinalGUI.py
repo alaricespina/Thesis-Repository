@@ -100,7 +100,7 @@ class MainGUI():
         # self.initializeHourlyFrame()
         self.initializeTrueFrame()
         self.generateInitialData()
-        self.dbn_model = joblib.load("FinalDBNRFCModel.pkl")
+        # self.dbn_model = joblib.load("FinalDBNRFCModel.pkl")
         # self.adjustGridWidths()
         # self.bindTimer()
         # self.show()
