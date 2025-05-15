@@ -12,7 +12,7 @@ from random import randint
 from datetime import datetime, date, time
 from CalendarWidgetClass import CalendarWidget
 # from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
-from tensorflow.keras.models import load_model
+# from tensorflow.keras.models import load_model
 import joblib 
 
 
