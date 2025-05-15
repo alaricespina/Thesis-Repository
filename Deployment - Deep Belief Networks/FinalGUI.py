@@ -399,6 +399,7 @@ class MainGUI():
             currentMinPressure = 0
             currentMaxWind = 0
             currentMinWind = 0
+            self.print("-")
 
         # Create the message
         message = (f"Temperature: {current_temp_data:.2f}°C\n"
