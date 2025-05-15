@@ -13,7 +13,7 @@ from datetime import datetime, date, time
 from CalendarWidgetClass import CalendarWidget
 # from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
 # from tensorflow.keras.models import load_model
-import joblib 
+# import joblib 
 
 
 # Condition - Not Yet Predicting 
@@ -101,6 +101,7 @@ class MainGUI():
         self.initializeTrueFrame()
         self.generateInitialData()
         # self.dbn_model = joblib.load("FinalDBNRFCModel.pkl")
+        self.dbn_model = None
         # self.adjustGridWidths()
         # self.bindTimer()
         # self.show()
@@ -380,15 +381,24 @@ class MainGUI():
         
 
         
-
-        currentMaxTemp = self.temperatureData.max()
-        currentMinTemp = self.temperatureData.min()
-        currentMaxHumid = self.humidityData.max()
-        currentMinHumid = self.humidityData.min()
-        currentMaxPressure = self.pressureData.max()
-        currentMinPressure = self.pressureData.min()
-        currentMaxWind = self.windData.max()
-        currentMinWind = self.windData.min()
+        try:
+            currentMaxTemp = self.temperatureData.max()
+            currentMinTemp = self.temperatureData.min()
+            currentMaxHumid = self.humidityData.max()
+            currentMinHumid = self.humidityData.min()
+            currentMaxPressure = self.pressureData.max()
+            currentMinPressure = self.pressureData.min()
+            currentMaxWind = self.windData.max()
+            currentMinWind = self.windData.min()
+        except:
+            currentMaxTemp = 0
+            currentMinTemp = 0
+            currentMaxHumid = 0
+            currentMinHumid = 0
+            currentMaxPressure = 0
+            currentMinPressure = 0
+            currentMaxWind = 0
+            currentMinWind = 0
 
         # Create the message
         message = (f"Temperature: {current_temp_data:.2f}°C\n"
