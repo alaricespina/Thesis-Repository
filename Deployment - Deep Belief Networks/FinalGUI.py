@@ -11,7 +11,7 @@ import numpy as np
 from random import randint 
 from datetime import datetime, date, time
 from CalendarWidgetClass import CalendarWidget
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
+# from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
 from tensorflow.keras.models import load_model
 import joblib 
 
@@ -436,7 +436,7 @@ class MainGUI():
             inputXData.append(t_row)
 
         inputXData = np.array(inputXData)
-        inputXData = minmax_scale(inputXData, feature_range = (0, 1))
+        # inputXData = minmax_scale(inputXData, feature_range = (0, 1))
         return inputXData
          
 
