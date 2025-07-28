@@ -33,8 +33,8 @@ def main():
     
     # Configuration
     DATA_PATH = "../Data Source Files/"
-    DBN_MODEL_PATH = "optimized_dbn_rf_model.pkl"
-    VANILLA_MODEL_PATH = "optimized_vanilla_rf_model.pkl"
+    DBN_MODEL_PATH = "models/optimized_dbn_rf_model.pkl"
+    VANILLA_MODEL_PATH = "models/optimized_vanilla_rf_model.pkl"
     PLOTS_DIR = "plots"
     
     # Optimized DBN Configuration for higher accuracy

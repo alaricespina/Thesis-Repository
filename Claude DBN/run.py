@@ -63,8 +63,8 @@ def main():
     
     # Configuration
     DATA_PATH = "../Data Source Files/"
-    DBN_MODEL_PATH = "trained_dbn_rf_model.pkl"
-    VANILLA_MODEL_PATH = "trained_vanilla_rf_model.pkl"
+    DBN_MODEL_PATH = "models/trained_dbn_rf_model.pkl"
+    VANILLA_MODEL_PATH = "models/trained_vanilla_rf_model.pkl"
     
     # DBN Configuration
     DBN_CONFIG = {
