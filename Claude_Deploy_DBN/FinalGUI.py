@@ -11,12 +11,12 @@ import numpy as np
 from random import randint 
 from datetime import datetime, date, time
 from CalendarWidgetClass import CalendarWidget
-# from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder, minmax_scale
 # from tensorflow.keras.models import load_model
-# import joblib 
+import joblib 
 
 
-# Condition - Not Yet Predicting 
+# Condition - Now Predicting with DBN Model 
 # Local Records
 # Site Records
 # Dapat Hourly Records 
@@ -100,8 +100,12 @@ class MainGUI():
         # self.initializeHourlyFrame()
         self.initializeTrueFrame()
         self.generateInitialData()
-        # self.dbn_model = joblib.load("FinalDBNRFCModel.pkl")
-        self.dbn_model = None
+        try:
+            self.dbn_model = joblib.load("FinalDBNRFCModel.pkl")
+            print("[Start Up] DBN Model loaded successfully")
+        except Exception as e:
+            print(f"[Error] Failed to load DBN model: {e}")
+            self.dbn_model = None
         # self.adjustGridWidths()
         # self.bindTimer()
         # self.show()
@@ -430,41 +434,105 @@ class MainGUI():
         
 
     def prepareData(self):
-        # ["tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]
-        recordLength = 60 * 60 * 24 - 1
-        maxTempData = [self.temperatureData.max()]  * recordLength
-        minTempData = [self.temperatureData.min()]  * recordLength
+        try:
+            # ["tempmax", "tempmin", "temp", "humidity", "windspeed", "sealevelpressure"]
+            # Check if we have enough data
+            if len(self.temperatureData) < 100 or len(self.humidityData) < 100:
+                print("[Warning] Insufficient sensor data for prediction")
+                return None
+                
+            # Prepare data arrays with proper error handling
+            recordLength = min(60 * 60 * 24 - 1, len(self.temperatureData) - 1)
+            
+            # Handle case where all temperature data might be the same
+            temp_max = self.temperatureData.max() if self.temperatureData.max() != self.temperatureData.min() else self.temperatureData.max() + 0.1
+            temp_min = self.temperatureData.min()
+            
+            maxTempData = [temp_max] * recordLength
+            minTempData = [temp_min] * recordLength
+            
+            # Ensure arrays have the same length
+            temp_data = self.temperatureData[-recordLength:] if len(self.temperatureData) > recordLength else self.temperatureData
+            humid_data = self.humidityData[-recordLength:] if len(self.humidityData) > recordLength else self.humidityData  
+            wind_data = self.windData[-recordLength:] if len(self.windData) > recordLength else self.windData
+            pressure_data = self.pressureData[-recordLength:] if len(self.pressureData) > recordLength else self.pressureData
+            
+            # Pad arrays if they're too short
+            min_length = min(len(temp_data), len(humid_data), len(wind_data), len(pressure_data))
+            temp_data = temp_data[-min_length:]
+            humid_data = humid_data[-min_length:]
+            wind_data = wind_data[-min_length:]
+            pressure_data = pressure_data[-min_length:]
 
-        rawDataArr = [maxTempData, minTempData, self.temperatureData[:-recordLength], self.humidityData, self.windData, self.pressureData]
-        rawData = np.array(rawDataArr)
-        inputXData = []
-        WINDOW_LENGTH = 7
-        for i in range(len(rawData) - WINDOW_LENGTH):
-            t_row = []
-            for j in rawData[i : i + WINDOW_LENGTH]:
-                t_row.append(j[:-1])
-            t_row = np.array(t_row).flatten()
-            inputXData.append(t_row)
+            rawDataArr = [maxTempData[:min_length], minTempData[:min_length], temp_data, humid_data, wind_data, pressure_data]
+            rawData = np.array(rawDataArr)
+            
+            inputXData = []
+            WINDOW_LENGTH = 7
+            
+            # Ensure we have enough data for windowing
+            if rawData.shape[1] < WINDOW_LENGTH:
+                print(f"[Warning] Not enough data for window length {WINDOW_LENGTH}")
+                return None
+            
+            for i in range(rawData.shape[0] - WINDOW_LENGTH + 1):
+                t_row = []
+                for j in range(WINDOW_LENGTH):
+                    if i + j < rawData.shape[0]:
+                        t_row.extend(rawData[i + j, :-1])
+                inputXData.append(t_row)
 
-        inputXData = np.array(inputXData)
-        # inputXData = minmax_scale(inputXData, feature_range = (0, 1))
-        return inputXData
+            inputXData = np.array(inputXData)
+            
+            # Apply normalization if we have valid data
+            if len(inputXData) > 0 and inputXData.shape[1] > 0:
+                inputXData = minmax_scale(inputXData, feature_range=(0, 1))
+                return inputXData
+            else:
+                print("[Warning] No valid input data after processing")
+                return None
+                
+        except Exception as e:
+            print(f"[Error] Data preparation failed: {e}")
+            return None
          
 
     def processPrediction(self):
-        weatherConditions = ["Cloudy", "Rainy", "Sunny", "Windy"]
-        self.predictionOutput = self.dbn_model.predict(self.prepareData())
-        self.predictionClass = weatherConditions[np.argmax(self.predictionOutput, axis = 1)]
-        newData = {
-            "datetime" : date.today().strftime("%m/%d/%Y"),
-            "sensor_windspeed" : np.mean(self.windData[self.windData != 0]),
-            "sensor_pressure" : np.mean(self.pressureData),
-            "sensor_temperature" : np.mean(self.temperatureData),
-            "sensor_humidity" : np.mean(self.humidity),
-            "predictions" : self.predictionOutput,
-            "predictionsClass" : self.predictionClass
-        }
-        self.pred_df = pd.concat([self.pred_df, newData], ignore_index = True)     
+        if self.dbn_model is None:
+            print("[Warning] DBN model not loaded, skipping prediction")
+            return
+            
+        try:
+            weatherConditions = ["Cloudy", "Rainy", "Sunny", "Windy"]
+            
+            # Prepare and preprocess data
+            input_data = self.prepareData()
+            if input_data is None or len(input_data) == 0:
+                print("[Warning] No valid input data for prediction")
+                return
+                
+            # Make prediction
+            self.predictionOutput = self.dbn_model.predict(input_data)
+            self.predictionClass = weatherConditions[np.argmax(self.predictionOutput, axis=1)[0]]
+            
+            # Create new data entry
+            newData = {
+                "datetime": date.today().strftime("%m/%d/%Y"),
+                "sensor_windspeed": np.mean(self.windData[self.windData != 0]) if np.any(self.windData != 0) else 0,
+                "sensor_pressure": np.mean(self.pressureData),
+                "sensor_temperature": np.mean(self.temperatureData),
+                "sensor_humidity": np.mean(self.humidityData),
+                "predictions": self.predictionOutput[0] if len(self.predictionOutput) > 0 else [0, 0, 0, 0],
+                "predictionsClass": self.predictionClass
+            }
+            
+            # Add to dataframe
+            self.pred_df = pd.concat([self.pred_df, pd.DataFrame([newData])], ignore_index=True)
+            print(f"[Prediction] Weather class: {self.predictionClass}")
+            
+        except Exception as e:
+            print(f"[Error] Prediction failed: {e}")
+            # Continue without adding prediction data     
 
     # Drives:
     # Current Frame - Sensor Graph [Real Time, 1 Hour, 1 Day] - Weather Prediction - Console
@@ -478,17 +546,7 @@ class MainGUI():
         sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    current_directory = os.path.basename(os.getcwd())
-    if current_directory != "Deployment - Deep Belief Networks":
-        print("Current Directory is not Deployment - Deep Belief Networks")
-        print("Changing from:", current_directory, "to: Deployment - Deep Belief Networks")
-        try:
-            os.chdir("Deployment - Deep Belief Networks")
-            print("Working Directory is now:" , os.getcwd())
-        except Exception as E:
-            print("Encountered Error while changing Directory")
-            print("Error: ", E)
-            exit()
+    
 
     A = MainGUI()
     A.show()

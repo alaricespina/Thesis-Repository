@@ -447,6 +447,39 @@ class SensorDataManager:
             self.forecast_cache = {}
             self.forecast_generated = False
             self.forecast_date = None
+    
+    def has_tomorrow_forecast(self):
+        """Check if tomorrow's forecast exists in cache for all key variables"""
+        try:
+            if not self.forecast_generated or not self.forecast_cache:
+                return False
+            
+            current_date = datetime.now().date()
+            tomorrow = current_date + timedelta(days=1)
+            
+            # Check if we have forecasts for key variables that include tomorrow
+            key_variables = ['temperature_14', 'humidity_14', 'precipitation_14']
+            
+            for var_key in key_variables:
+                if var_key not in self.forecast_cache:
+                    return False
+                
+                dates, values = self.forecast_cache[var_key]
+                
+                # Check if tomorrow is in the forecast dates (index 1, since index 0 is today)
+                if len(dates) < 2:
+                    return False
+                
+                forecast_date = dates[1].date()
+                if forecast_date != tomorrow:
+                    return False
+            
+            print(f"Tomorrow's forecast ({tomorrow}) found in cache")
+            return True
+            
+        except Exception as e:
+            print(f"Error checking tomorrow's forecast: {e}")
+            return False
 
 # Initialize global sensor manager
 sensor_manager = SensorDataManager()
@@ -892,12 +925,24 @@ def updateState(target_state, force_refresh=False):
     # Check if we need to regenerate forecasts
     current_date = datetime.now().date()
     
-    # Force refresh if manually triggered or date changed
-    if (force_refresh or 
-        not sensor_manager.forecast_generated or 
-        sensor_manager.forecast_date != current_date):
-        
-        print(f"Clearing forecast cache - Date: {current_date}, Force: {force_refresh}")
+    # Smart refresh logic: only regenerate if needed
+    should_regenerate = False
+    
+    if force_refresh:
+        # When refresh button is pressed, check if tomorrow's forecast exists
+        if not sensor_manager.has_tomorrow_forecast():
+            print("Refresh requested: Tomorrow's forecast missing - regenerating")
+            should_regenerate = True
+        else:
+            print("Refresh requested: Tomorrow's forecast exists in cache - keeping current forecasts")
+    elif not sensor_manager.forecast_generated:
+        print("No forecasts generated yet - generating initial forecasts")
+        should_regenerate = True
+    elif sensor_manager.forecast_date != current_date:
+        print(f"Date changed from {sensor_manager.forecast_date} to {current_date} - regenerating forecasts")
+        should_regenerate = True
+    
+    if should_regenerate:
         sensor_manager.clear_forecast_cache()
     
     checkState() 
