@@ -389,12 +389,7 @@ def displayTemperature():
                                    text=f"{sensor_manager.current_data['temperature']:.1f}°C", 
                                    font=arial_large_font)
     currentTempValue.pack(pady=5)
-    
-    currentTempTime = ctk.CTkLabel(master=currentTempFrame, 
-                                  text=f"Updated: {datetime.now().strftime('%H:%M:%S')}", 
-                                  font=arial_small_font)
-    currentTempTime.pack(pady=2)
-    
+
     # Predicted Temperature Display
     predTempFrame = ctk.CTkFrame(master=app)
     predTempFrame.place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.25)
@@ -406,12 +401,7 @@ def displayTemperature():
                                 text=f"{sensor_manager.predictions['temperature']:.1f}°C", 
                                 font=arial_large_font)
     predTempValue.pack(pady=5)
-    
-    predTempTime = ctk.CTkLabel(master=predTempFrame, 
-                               text="For today", 
-                               font=arial_small_font)
-    predTempTime.pack(pady=2)
-    
+        
     # Temperature Sensor Status
     statusFrame = ctk.CTkFrame(master=app)
     statusFrame.place(relx=0.68, rely=0.05, relwidth=0.3, relheight=0.25)
@@ -437,7 +427,7 @@ def displayTemperature():
     
     # Temperature Forecast Graph
     graphFrame = ctk.CTkFrame(master=app)
-    graphFrame.place(relx=0.02, rely=0.35, relwidth=0.96, relheight=0.4)
+    graphFrame.place(relx=0.02, rely=0.35, relwidth=0.96, relheight=0.5)
     
     # graphTitle = ctk.CTkLabel(master=graphFrame, text="14-Day Temperature Forecast", font=arial_bold_font)
     # graphTitle.pack(pady=(10, 5))
@@ -607,7 +597,7 @@ def displayHumidity():
     
     # Current Humidity Display
     currentHumFrame = ctk.CTkFrame(master=app)
-    currentHumFrame.place(relx=0.02, rely=0.05, relwidth=0.3, relheight=0.35)
+    currentHumFrame.place(relx=0.02, rely=0.05, relwidth=0.3, relheight=0.25)
     
     currentHumTitle = ctk.CTkLabel(master=currentHumFrame, text="Current Humidity", font=arial_bold_font)
     currentHumTitle.pack(pady=15)
@@ -617,14 +607,9 @@ def displayHumidity():
                                   font=arial_large_font)
     currentHumValue.pack(pady=10)
     
-    currentHumTime = ctk.CTkLabel(master=currentHumFrame, 
-                                 text=f"Updated: {datetime.now().strftime('%H:%M:%S')}", 
-                                 font=arial_small_font)
-    currentHumTime.pack(pady=5)
-    
     # Predicted Humidity Display
     predHumFrame = ctk.CTkFrame(master=app)
-    predHumFrame.place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.35)
+    predHumFrame.place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.25)
     
     predHumTitle = ctk.CTkLabel(master=predHumFrame, text="Predicted Humidity", font=arial_bold_font)
     predHumTitle.pack(pady=15)
@@ -633,15 +618,10 @@ def displayHumidity():
                                text=f"{sensor_manager.predictions['humidity']:.1f}%", 
                                font=arial_large_font)
     predHumValue.pack(pady=10)
-    
-    predHumTime = ctk.CTkLabel(master=predHumFrame, 
-                              text="For today", 
-                              font=arial_small_font)
-    predHumTime.pack(pady=5)
-    
+
     # Humidity Sensor Status
     statusFrame = ctk.CTkFrame(master=app)
-    statusFrame.place(relx=0.68, rely=0.05, relwidth=0.3, relheight=0.35)
+    statusFrame.place(relx=0.68, rely=0.05, relwidth=0.3, relheight=0.25)
     
     statusTitle = ctk.CTkLabel(master=statusFrame, text="Humidity Sensor", font=arial_bold_font)
     statusTitle.pack(pady=15)
@@ -664,7 +644,7 @@ def displayHumidity():
     
     # Humidity Forecast Graph
     graphFrame = ctk.CTkFrame(master=app)
-    graphFrame.place(relx=0.02, rely=0.45, relwidth=0.96, relheight=0.3)
+    graphFrame.place(relx=0.02, rely=0.35, relwidth=0.96, relheight=0.5)
     
     # graphTitle = ctk.CTkLabel(master=graphFrame, text="14-Day Humidity Forecast", font=arial_bold_font)
     # graphTitle.pack(pady=(10, 5))
@@ -682,7 +662,7 @@ def displayPrecipitation():
     
     # Current Precipitation Display
     currentFrame = ctk.CTkFrame(master=app)
-    currentFrame.place(relx=0.02, rely=0.05, relwidth=0.3, relheight=0.35)
+    currentFrame.place(relx=0.02, rely=0.05, relwidth=0.3, relheight=0.25)
     
     currentTitle = ctk.CTkLabel(master=currentFrame, text="Current Precipitation", font=arial_bold_font)
     currentTitle.pack(pady=15)
@@ -694,14 +674,10 @@ def displayPrecipitation():
                                   font=arial_large_font)
     precipAmountLabel.pack(pady=10)
     
-    currentTime = ctk.CTkLabel(master=currentFrame, 
-                              text=f"Updated: {datetime.now().strftime('%H:%M:%S')}", 
-                              font=arial_small_font)
-    currentTime.pack(pady=5)
     
     # Predicted Precipitation Display
     predFrame = ctk.CTkFrame(master=app)
-    predFrame.place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.35)
+    predFrame.place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.25)
     
     predTitle = ctk.CTkLabel(master=predFrame, text="Predicted Precipitation", font=arial_bold_font)
     predTitle.pack(pady=15)
@@ -711,14 +687,10 @@ def displayPrecipitation():
                             font=arial_large_font)
     predValue.pack(pady=10)
     
-    predTime = ctk.CTkLabel(master=predFrame, 
-                           text="For today", 
-                           font=arial_small_font)
-    predTime.pack(pady=5)
-    
+
     # Rain Sensor Status
     statusFrame = ctk.CTkFrame(master=app)
-    statusFrame.place(relx=0.68, rely=0.05, relwidth=0.3, relheight=0.35)
+    statusFrame.place(relx=0.68, rely=0.05, relwidth=0.3, relheight=0.25)
     
     statusTitle = ctk.CTkLabel(master=statusFrame, text="Rain Sensor", font=arial_bold_font)
     statusTitle.pack(pady=15)
@@ -734,7 +706,7 @@ def displayPrecipitation():
     
     # Precipitation Forecast Graph
     graphFrame = ctk.CTkFrame(master=app)
-    graphFrame.place(relx=0.02, rely=0.45, relwidth=0.96, relheight=0.3)
+    graphFrame.place(relx=0.02, rely=0.35, relwidth=0.96, relheight=0.5)
     
     # graphTitle = ctk.CTkLabel(master=graphFrame, text="14-Day Precipitation Forecast", font=arial_bold_font)
     # graphTitle.pack(pady=(10, 5))
