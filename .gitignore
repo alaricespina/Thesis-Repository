@@ -1,2 +1,7 @@
-Claude DBN/claude_dbn
-Claude DBN/models
+Claude_DBN/claude_dbn
+Claude_DBN/models
+Claude_DBN/__pycache__
+Claude_DLAR/models 
+Claude_DLAR/__pycache__
+Claude_DLAR/claude_dlar
+Claude_DBN/*.csv

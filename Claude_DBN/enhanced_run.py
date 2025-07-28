@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import pandas as pd
 import time
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split  # No longer needed
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -31,11 +31,20 @@ def main():
     """Main execution function"""
     print("=== ENHANCED Weather Classifier: Optimized DBN+RF vs Vanilla RF ===\n")
     
+    # Ask user for training data range preference
+    print("Training Data Options:")
+    print("1. Use all historical data (2001-2024)")
+    print("2. Use recent data only (2011-2024)")
+    choice = input("Enter your choice (1 or 2): ").strip()
+    
+    use_2011_onwards = choice == '2'
+    year_suffix = "2011_2024" if use_2011_onwards else "2001_2024"
+    
     # Configuration
     DATA_PATH = "../Data Source Files/"
-    DBN_MODEL_PATH = "models/optimized_dbn_rf_model.pkl"
-    VANILLA_MODEL_PATH = "models/optimized_vanilla_rf_model.pkl"
-    PLOTS_DIR = "plots"
+    DBN_MODEL_PATH = f"models/optimized_dbn_rf_model_{year_suffix}.pkl"
+    VANILLA_MODEL_PATH = f"models/optimized_vanilla_rf_model_{year_suffix}.pkl"
+    PLOTS_DIR = f"plots_{year_suffix}"
     
     # Optimized DBN Configuration for higher accuracy
     DBN_CONFIG = {
@@ -62,15 +71,15 @@ def main():
     }
     
     try:
-        # Step 1: Load and preprocess data with enhanced features
-        print("Step 1: Loading and preprocessing data with advanced feature engineering...")
-        preprocessor = EnhancedWeatherDataPreprocessor(DATA_PATH)
-        X, y = preprocessor.process_all()
+        # Step 1: Load and preprocess training data with enhanced features
+        print("Step 1: Loading and preprocessing training data with advanced feature engineering...")
+        preprocessor = EnhancedWeatherDataPreprocessor(DATA_PATH, use_2011_onwards=use_2011_onwards)
+        X_train, y_train = preprocessor.process_all()
         
         class_names = preprocessor.get_class_names()
-        print(f"\nDataset loaded successfully!")
-        print(f"Features shape: {X.shape}")
-        print(f"Target shape: {y.shape}")
+        print(f"\nTraining dataset loaded successfully!")
+        print(f"Features shape: {X_train.shape}")
+        print(f"Target shape: {y_train.shape}")
         print(f"Number of weather conditions: {len(class_names)}")
         print(f"Weather conditions: {list(class_names)}")
         
@@ -78,16 +87,14 @@ def main():
         comparison = EnhancedModelComparison(save_plots=True, plot_dir=PLOTS_DIR)
         
         # Plot and save class distribution
-        comparison.plot_class_distribution(y, class_names, "Enhanced Weather Conditions Distribution")
+        comparison.plot_class_distribution(y_train, class_names, f"Enhanced Training Data Distribution ({year_suffix})")
         
-        # Step 2: Split data with stratification
-        print("\nStep 2: Splitting data into train/test sets...")
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        # Step 2: Load and preprocess 2025 test data
+        print("\nStep 2: Loading 2025 test data...")
+        X_test, y_test = preprocessor.process_test_2025()
         
         print(f"Training set: {X_train.shape[0]} samples")
-        print(f"Test set: {X_test.shape[0]} samples")
+        print(f"Test set (2025): {X_test.shape[0]} samples")
         
         # Step 3: Train or load optimized models
         print("\nStep 3: Training/Loading optimized models...")
@@ -164,7 +171,7 @@ def main():
         comparison.plot_training_time_comparison()
         
         # Save comparison results
-        comparison.save_results_to_csv("optimized_model_comparison_results.csv")
+        comparison.save_results_to_csv(f"optimized_model_comparison_results_{year_suffix}.csv")
         
         # Step 6: Advanced feature analysis for DBN model
         print("\nStep 6: Advanced DBN feature extraction analysis...")
@@ -232,8 +239,10 @@ def main():
         print(f"\n{'='*80}")
         print("FINAL ENHANCED MODEL COMPARISON RESULTS")
         print(f"{'='*80}")
-        print(f"Optimized DBN+RF model accuracy: {dbn_results['accuracy']:.4f} ({dbn_results['accuracy']*100:.2f}%)")
-        print(f"Optimized Vanilla RF model accuracy: {vanilla_results['accuracy']:.4f} ({vanilla_results['accuracy']*100:.2f}%)")
+        print(f"Training data range: {year_suffix.replace('_', '-')}")
+        print(f"Test data: 2025")
+        print(f"Optimized DBN+RF model accuracy on 2025: {dbn_results['accuracy']:.4f} ({dbn_results['accuracy']*100:.2f}%)")
+        print(f"Optimized Vanilla RF model accuracy on 2025: {vanilla_results['accuracy']:.4f} ({vanilla_results['accuracy']*100:.2f}%)")
         
         improvement = ((dbn_results['accuracy'] - vanilla_results['accuracy']) / vanilla_results['accuracy']) * 100
         if improvement > 0:
@@ -244,7 +253,7 @@ def main():
         print(f"\nModel files saved:")
         print(f"  - {DBN_MODEL_PATH}")
         print(f"  - {VANILLA_MODEL_PATH}")
-        print(f"  - optimized_model_comparison_results.csv")
+        print(f"  - optimized_model_comparison_results_{year_suffix}.csv")
         print(f"  - All plots saved in '{PLOTS_DIR}/' directory")
         
         target_accuracy = 0.86

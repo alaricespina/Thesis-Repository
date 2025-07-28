@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import pandas as pd
 import time
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split  # No longer needed
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -61,10 +61,19 @@ def main():
     """Main execution function"""
     print("=== Weather Classifier Comparison: DBN+RF vs Vanilla RF ===\n")
     
+    # Ask user for training data range preference
+    print("Training Data Options:")
+    print("1. Use all historical data (2001-2024)")
+    print("2. Use recent data only (2011-2024)")
+    choice = input("Enter your choice (1 or 2): ").strip()
+    
+    use_2011_onwards = choice == '2'
+    year_suffix = "2011_2024" if use_2011_onwards else "2001_2024"
+    
     # Configuration
     DATA_PATH = "../Data Source Files/"
-    DBN_MODEL_PATH = "models/trained_dbn_rf_model.pkl"
-    VANILLA_MODEL_PATH = "models/trained_vanilla_rf_model.pkl"
+    DBN_MODEL_PATH = f"models/trained_dbn_rf_model_{year_suffix}.pkl"
+    VANILLA_MODEL_PATH = f"models/trained_vanilla_rf_model_{year_suffix}.pkl"
     
     # DBN Configuration
     DBN_CONFIG = {
@@ -89,28 +98,26 @@ def main():
     }
     
     try:
-        # Step 1: Load and preprocess data
-        print("Step 1: Loading and preprocessing data...")
-        preprocessor = WeatherDataPreprocessor(DATA_PATH)
-        X, y = preprocessor.process_all()
+        # Step 1: Load and preprocess training data
+        print("Step 1: Loading and preprocessing training data...")
+        preprocessor = WeatherDataPreprocessor(DATA_PATH, use_2011_onwards=use_2011_onwards)
+        X_train, y_train = preprocessor.process_all()
         
         class_names = preprocessor.get_class_names()
-        print(f"\nDataset loaded successfully!")
-        print(f"Features shape: {X.shape}")
-        print(f"Target shape: {y.shape}")
+        print(f"\nTraining dataset loaded successfully!")
+        print(f"Features shape: {X_train.shape}")
+        print(f"Target shape: {y_train.shape}")
         print(f"Number of weather conditions: {len(class_names)}")
         
         # Plot class distribution
-        plot_class_distribution(y, class_names, "Weather Conditions Distribution")
+        plot_class_distribution(y_train, class_names, f"Training Data Distribution ({year_suffix})")
         
-        # Step 2: Split data
-        print("\nStep 2: Splitting data into train/test sets...")
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        # Step 2: Load and preprocess 2025 test data
+        print("\nStep 2: Loading 2025 test data...")
+        X_test, y_test = preprocessor.process_test_2025()
         
         print(f"Training set: {X_train.shape[0]} samples")
-        print(f"Test set: {X_test.shape[0]} samples")
+        print(f"Test set (2025): {X_test.shape[0]} samples")
         
         # Step 3: Check for existing models or train new ones
         print("\nStep 3: Training/Loading models...")
@@ -228,10 +235,19 @@ def main():
                 print(f"  ✗ Models disagree")
         
         print(f"\n=== Model Comparison Completed! ===")
+        print(f"Training data range: {year_suffix.replace('_', '-')}")
+        print(f"Test data: 2025")
         print(f"DBN+RF model saved as: {DBN_MODEL_PATH}")
         print(f"Vanilla RF model saved as: {VANILLA_MODEL_PATH}")
-        print(f"DBN+RF accuracy: {dbn_results['accuracy']:.4f}")
-        print(f"Vanilla RF accuracy: {vanilla_results['accuracy']:.4f}")
+        print(f"DBN+RF accuracy on 2025 data: {dbn_results['accuracy']:.4f} ({dbn_results['accuracy']*100:.2f}%)")
+        print(f"Vanilla RF accuracy on 2025 data: {vanilla_results['accuracy']:.4f} ({vanilla_results['accuracy']*100:.2f}%)")
+        
+        # Calculate improvement
+        improvement = ((dbn_results['accuracy'] - vanilla_results['accuracy']) / vanilla_results['accuracy']) * 100
+        if improvement > 0:
+            print(f"DBN+RF shows {improvement:.2f}% improvement over Vanilla RF")
+        else:
+            print(f"Vanilla RF performs {abs(improvement):.2f}% better than DBN+RF")
         
     except Exception as e:
         print(f"Error during execution: {str(e)}")
