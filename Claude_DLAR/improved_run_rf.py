@@ -142,11 +142,19 @@ class ImprovedModelRunner:
             self.legacy_rf.fit(self.historical_data, self.target_columns)
             self.models['Legacy_RF'] = self.legacy_rf
             
-            # Save model
+            # Save model components without class reference
             model_path = os.path.join(self.models_dir, 'legacy_rf_model.pkl')
+            model_data = {
+                'model_order': self.legacy_rf.model_order,
+                'yearly_season_length': self.legacy_rf.yearly_season_length,
+                'models': self.legacy_rf.models,
+                'model_params': self.legacy_rf.model_params,
+                'target_columns': self.legacy_rf.target_columns,
+                'fitted': self.legacy_rf.fitted
+            }
             with open(model_path, 'wb') as f:
-                pickle.dump(self.legacy_rf, f)
-            print(f"✓ Legacy RF model saved to {model_path}")
+                pickle.dump(model_data, f)
+            print(f"✓ Legacy RF model data saved to {model_path}")
             print("Legacy Random Forest model trained successfully")
             
         except Exception as e:
