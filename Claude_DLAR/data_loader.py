@@ -7,7 +7,6 @@ class DataLoader:
         self.data_source_path = Path(data_source_path)
         
     def load_historical_data(self, start_year=2001, end_year=2024):
-        """Load and concatenate historical data from 2001-2024"""
         dfs = []
         
         for year in range(start_year, end_year + 1):
@@ -33,7 +32,7 @@ class DataLoader:
     
     def prepare_target_variables(self, df):
         """Extract temperature, humidity, and precipitation columns"""
-        target_cols = ['temp', 'humidity', 'precip']
+        target_cols = ['temp', 'humidity', 'precip', 'tempmax', 'tempmin']
         
         # Ensure all target columns exist
         available_cols = []

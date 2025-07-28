@@ -6,6 +6,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 import warnings
 import signal
 import time
+import platform
 warnings.filterwarnings('ignore')
 
 class SARIMAModel:
@@ -40,33 +41,53 @@ class SARIMAModel:
         return best_period
     
     def fit_with_timeout(self, series, order, seasonal_order, timeout=120):
-        """Fit SARIMA model with timeout protection"""
+        """Fit SARIMA model with cross-platform timeout protection"""
         def timeout_handler(signum, frame):
             raise TimeoutError("SARIMA fitting timed out")
             
-        # Set timeout alarm
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(timeout)
+        # Use timeout only on Unix-like systems (Linux, macOS, RPi)
+        use_timeout = platform.system() in ['Linux', 'Darwin']
         
-        try:
-            model = SARIMAX(
-                series, 
-                order=order,
-                seasonal_order=seasonal_order,
-                enforce_stationarity=False,
-                enforce_invertibility=False
-            )
-            fitted_model = model.fit(disp=False, maxiter=100)  # Limit iterations
-            signal.alarm(0)  # Cancel timeout
-            return fitted_model
-        except TimeoutError:
-            signal.alarm(0)
-            print(f"SARIMA fitting timed out after {timeout} seconds")
-            return None
-        except Exception as e:
-            signal.alarm(0)
-            print(f"SARIMA fitting failed: {e}")
-            return None
+        if use_timeout:
+            try:
+                # Set timeout alarm
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(timeout)
+                
+                model = SARIMAX(
+                    series, 
+                    order=order,
+                    seasonal_order=seasonal_order,
+                    enforce_stationarity=False,
+                    enforce_invertibility=False
+                )
+                fitted_model = model.fit(disp=False, maxiter=100)
+                signal.alarm(0)  # Cancel timeout
+                return fitted_model
+                
+            except TimeoutError:
+                signal.alarm(0)
+                print(f"SARIMA fitting timed out after {timeout} seconds")
+                return None
+            except Exception as e:
+                signal.alarm(0)
+                print(f"SARIMA fitting failed: {e}")
+                return None
+        else:
+            # Windows/WSL - no timeout, just try to fit
+            try:
+                model = SARIMAX(
+                    series, 
+                    order=order,
+                    seasonal_order=seasonal_order,
+                    enforce_stationarity=False,
+                    enforce_invertibility=False
+                )
+                fitted_model = model.fit(disp=False, maxiter=100)
+                return fitted_model
+            except Exception as e:
+                print(f"SARIMA fitting failed: {e}")
+                return None
 
     def fit(self, data, target_columns):
         """Fit SARIMA models for each target variable"""
@@ -84,12 +105,15 @@ class SARIMAModel:
                 
                 fitted_model = None
                 
-                # Try simpler SARIMA configurations in order of complexity
+                # Try weather-appropriate SARIMA configurations
                 configs_to_try = [
                     ((1, 1, 1), (0, 0, 0, 0)),        # ARIMA only, no seasonality
-                    ((1, 1, 1), (1, 0, 1, 12)),       # Simple seasonal
-                    ((1, 1, 1), (1, 1, 1, 12)),       # Original config
-                    ((2, 1, 2), (1, 1, 1, 12)),       # More complex
+                    ((1, 1, 1), (1, 0, 1, 365)),      # Yearly seasonality
+                    ((1, 1, 1), (1, 1, 1, 365)),      # Yearly seasonal with trend
+                    ((2, 1, 1), (1, 0, 1, 365)),      # More AR terms
+                    ((1, 1, 2), (1, 0, 1, 365)),      # More MA terms
+                    ((1, 1, 1), (1, 0, 1, 30)),       # Monthly seasonality
+                    ((1, 1, 1), (1, 0, 1, 7)),        # Weekly seasonality
                 ]
                 
                 for order, seasonal_order in configs_to_try:
