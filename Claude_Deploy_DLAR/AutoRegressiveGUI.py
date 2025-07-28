@@ -3,6 +3,7 @@ import tkinter
 import sys
 import os
 import pickle
+import json
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -18,7 +19,7 @@ from PIL import Image
 
 try:
     from DHT11 import DHT11
-    # Rain Sensor Here
+    from RainSensor import RainSensor
     SENSORS_AVAILABLE = True
 except ImportError:
     print("Warning: Sensor modules not available. Using simulated data.")
@@ -41,13 +42,20 @@ class SensorDataManager:
         }
         self.model = None
         self.historical_data = None
+        
+        # Forecast caching system
+        self.forecast_cache = {}
+        self.forecast_date = None
+        self.forecast_generated = False
+        
         self.load_model()
         self.load_historical_data()
+        self.load_forecast_cache()
         
         if SENSORS_AVAILABLE:
             try:
                 self.dht11 = DHT11()
-                # self.rain_sensor = RainSensor()
+                self.rain_sensor = RainSensor()
                 print("Sensors initialized successfully")
             except Exception as e:
                 print(f"Error initializing sensors: {e}")
@@ -90,12 +98,12 @@ class SensorDataManager:
                 # Read from DHT11
                 temp_dht = self.dht11.readTemperature()
                 humidity = self.dht11.readHumidity()
-                                
+                rain = self.rain_sensor.readRain()
                 self.current_data = {
                     'temperature': temp_dht,
                     'humidity': humidity or 50.0,
                     # 'pressure': pressure or 101325.0
-                    'precipitation': 0.0
+                    'precipitation': rain
                 }
             except Exception as e:
                 print(f"Error reading sensors: {e}")
@@ -147,8 +155,37 @@ class SensorDataManager:
         return None
     
     def generate_predictions(self):
-        """Generate weather predictions using model and historical data"""
+        """Generate weather predictions using cached forecast data or model"""
         try:
+            # First, try to use cached forecast data for consistency
+            if self.forecast_generated and self.forecast_cache:
+                # Use tomorrow's forecast from cached data (index 1, since index 0 is today)
+                temp_key = 'temperature_14'
+                humidity_key = 'humidity_14'
+                precip_key = 'precipitation_14'
+                
+                predictions_from_cache = {}
+                
+                # Get predictions from cached forecasts (use tomorrow's value)
+                if temp_key in self.forecast_cache:
+                    _, temp_forecast = self.forecast_cache[temp_key]
+                    predictions_from_cache['temperature'] = temp_forecast[1] if len(temp_forecast) > 1 else temp_forecast[0]
+                
+                if humidity_key in self.forecast_cache:
+                    _, humidity_forecast = self.forecast_cache[humidity_key]
+                    predictions_from_cache['humidity'] = humidity_forecast[1] if len(humidity_forecast) > 1 else humidity_forecast[0]
+                
+                if precip_key in self.forecast_cache:
+                    _, precip_forecast = self.forecast_cache[precip_key]
+                    predictions_from_cache['precipitation'] = precip_forecast[1] if len(precip_forecast) > 1 else precip_forecast[0]
+                
+                # If we got all predictions from cache, use them
+                if len(predictions_from_cache) == 3:
+                    self.predictions = predictions_from_cache
+                    print("Using cached forecast data for predictions")
+                    return
+            
+            # Fallback to the original prediction logic if no cache available
             historical_context = self.get_historical_context()
             
             if self.model and isinstance(self.model, dict) and self.model.get('fitted') and historical_context:
@@ -203,17 +240,38 @@ class SensorDataManager:
                 'precipitation': 0.0
             }
     
-    def generate_forecast_data(self, variable, days=30):
-        """Generate forecast data for graphing"""
+    def generate_forecast_data(self, variable, days=30, force_regenerate=False):
+        """Generate forecast data for graphing with caching"""
         try:
+            current_date = datetime.now().date()
+            cache_key = f"{variable}_{days}"
+            
+            # Check if we have valid cached data
+            if (not force_regenerate and 
+                self.forecast_generated and 
+                self.forecast_date == current_date and 
+                cache_key in self.forecast_cache):
+                
+                print(f"Using cached forecast for {variable}")
+                return self.forecast_cache[cache_key]
+            
+            print(f"Generating new forecast for {variable}")
+            
+            # Generate new forecast data
             forecast_data = []
             dates = []
             
             # Start from today
-            current_date = datetime.now()
+            start_date = datetime.now()
+            
+            # Set random seed based on date for consistency within the same day
+            date_seed = int(current_date.strftime('%Y%m%d'))
+            var_hash = abs(hash(variable)) % 1000000  # Limit hash to reasonable range
+            combined_seed = (date_seed + var_hash) % (2**32 - 1)  # Ensure within valid range
+            np.random.seed(combined_seed)
             
             for i in range(days):
-                date = current_date + timedelta(days=i)
+                date = start_date + timedelta(days=i)
                 dates.append(date)
                 
                 # Get historical context for this future date
@@ -230,7 +288,7 @@ class SensorDataManager:
                         base_value = historical_context['precip_mean']
                         std_dev = historical_context['precip_std']
                     
-                    # Add some trend and randomness
+                    # Add some trend and controlled randomness
                     trend = np.sin(2 * np.pi * i / 365) * 0.1  # Seasonal trend
                     noise = np.random.normal(0, std_dev * 0.2)
                     
@@ -246,7 +304,7 @@ class SensorDataManager:
                     
                     forecast_data.append(forecasted_value)
                 else:
-                    # Fallback values
+                    # Fallback values with seeded randomness
                     if variable == 'temperature':
                         forecast_data.append(25 + np.random.uniform(-3, 3))
                     elif variable == 'humidity':
@@ -254,11 +312,26 @@ class SensorDataManager:
                     else:
                         forecast_data.append(max(0, np.random.uniform(0, 5)))
             
-            return dates, forecast_data
+            # Cache the results
+            result = (dates, forecast_data)
+            self.forecast_cache[cache_key] = result
+            self.forecast_date = current_date
+            self.forecast_generated = True
+            
+            # Save cache to file for persistence
+            self.save_forecast_cache()
+            
+            return result
             
         except Exception as e:
             print(f"Error generating forecast data: {e}")
-            # Return dummy data
+            # Return dummy data with seeded randomness
+            current_date = datetime.now().date()
+            date_seed = int(current_date.strftime('%Y%m%d'))
+            var_hash = abs(hash(variable)) % 1000000  # Limit hash to reasonable range
+            combined_seed = (date_seed + var_hash) % (2**32 - 1)  # Ensure within valid range
+            np.random.seed(combined_seed)
+            
             dates = [datetime.now() + timedelta(days=i) for i in range(days)]
             if variable == 'temperature':
                 data = [25 + np.random.uniform(-2, 2) for _ in range(days)]
@@ -296,6 +369,84 @@ class SensorDataManager:
             print(f"Error getting historical context for date: {e}")
         
         return None
+    
+    def clear_forecast_cache(self):
+        """Clear the forecast cache to force regeneration"""
+        self.forecast_cache.clear()
+        self.forecast_generated = False
+        self.forecast_date = None
+        print("Forecast cache cleared")
+        
+        # Remove the saved cache file since it's no longer valid
+        try:
+            if os.path.exists('forecast_cache.json'):
+                os.remove('forecast_cache.json')
+                print("Saved forecast cache file removed")
+        except Exception as e:
+            print(f"Error removing forecast cache file: {e}")
+    
+    def save_forecast_cache(self):
+        """Save forecast cache to file for persistence"""
+        try:
+            if not self.forecast_generated or not self.forecast_cache:
+                return
+                
+            cache_data = {
+                'forecast_date': self.forecast_date.isoformat() if self.forecast_date else None,
+                'forecast_generated': self.forecast_generated,
+                'forecast_cache': {}
+            }
+            
+            # Convert numpy arrays and datetime objects to JSON-serializable format
+            for key, (dates, values) in self.forecast_cache.items():
+                cache_data['forecast_cache'][key] = {
+                    'dates': [d.isoformat() for d in dates],
+                    'values': [float(v) for v in values]
+                }
+            
+            with open('forecast_cache.json', 'w') as f:
+                json.dump(cache_data, f, indent=2)
+            
+            print(f"Forecast cache saved for date: {self.forecast_date}")
+            
+        except Exception as e:
+            print(f"Error saving forecast cache: {e}")
+    
+    def load_forecast_cache(self):
+        """Load forecast cache from file if available"""
+        try:
+            if not os.path.exists('forecast_cache.json'):
+                print("No saved forecast cache found")
+                return
+            
+            with open('forecast_cache.json', 'r') as f:
+                cache_data = json.load(f)
+            
+            # Check if the saved forecasts are from today
+            if cache_data.get('forecast_date'):
+                saved_date = datetime.fromisoformat(cache_data['forecast_date']).date()
+                current_date = datetime.now().date()
+                
+                if saved_date == current_date:
+                    # Load the cached forecasts
+                    self.forecast_date = saved_date
+                    self.forecast_generated = cache_data.get('forecast_generated', False)
+                    self.forecast_cache = {}
+                    
+                    for key, data in cache_data.get('forecast_cache', {}).items():
+                        dates = [datetime.fromisoformat(d) for d in data['dates']]
+                        values = data['values']
+                        self.forecast_cache[key] = (dates, values)
+                    
+                    print(f"Loaded forecast cache from {saved_date} ({len(self.forecast_cache)} forecasts)")
+                else:
+                    print(f"Saved forecast cache is from {saved_date}, current date is {current_date} - ignoring old cache")
+            
+        except Exception as e:
+            print(f"Error loading forecast cache: {e}")
+            self.forecast_cache = {}
+            self.forecast_generated = False
+            self.forecast_date = None
 
 # Initialize global sensor manager
 sensor_manager = SensorDataManager()
@@ -315,7 +466,7 @@ state = "Status"
 def create_forecast_graph(parent_frame, variable, title, color='blue', ylabel="Value", days=14):
     """Create a forecast graph for the specified variable"""
     try:
-        # Generate forecast data
+        # Generate forecast data (will use cache if available and valid)
         dates, forecast_data = sensor_manager.generate_forecast_data(variable, days)
         
         # Create matplotlib figure
@@ -579,9 +730,16 @@ def displayStatus():
     precipstatusTitle = ctk.CTkLabel(master=precipstatusFrame, text="Rain Sensor", font=arial_bold_font)
     precipstatusTitle.pack(pady=10)
     
-    # Check rain sensor connectivity (placeholder since rain sensor isn't implemented)
-    if hasattr(sensor_manager, 'rain_sensor') and sensor_manager.rain_sensor:
-        sensor_status = "✔️ Connected"
+    # Check rain sensor connectivity
+    if sensor_manager.rain_sensor:
+        try:
+            test_rain = sensor_manager.rain_sensor.readRain()
+            if test_rain is not None:
+                sensor_status = "✔️ Connected"
+            else:
+                sensor_status = "⚠️ Reading Error"
+        except:
+            sensor_status = "❌ Disconnected"
     else:
         sensor_status = "❌ Not Available"
     
@@ -695,9 +853,16 @@ def displayPrecipitation():
     statusTitle = ctk.CTkLabel(master=statusFrame, text="Rain Sensor", font=arial_bold_font)
     statusTitle.pack(pady=15)
     
-    # Check rain sensor connectivity (placeholder since rain sensor isn't implemented)
-    if hasattr(sensor_manager, 'rain_sensor') and sensor_manager.rain_sensor:
-        sensor_status = "✔️ Connected"
+    # Check rain sensor connectivity
+    if sensor_manager.rain_sensor:
+        try:
+            test_rain = sensor_manager.rain_sensor.readRain()
+            if test_rain is not None:
+                sensor_status = "✔️ Connected"
+            else:
+                sensor_status = "⚠️ Reading Error"
+        except:
+            sensor_status = "❌ Disconnected"
     else:
         sensor_status = "❌ Not Available"
     
@@ -720,11 +885,22 @@ def destroyChildren():
     for children in app.winfo_children():
         children.place_forget()
 
-def updateState(target_state):
+def updateState(target_state, force_refresh=False):
     global state
     state = target_state
-    checkState()
-    pass 
+    
+    # Check if we need to regenerate forecasts
+    current_date = datetime.now().date()
+    
+    # Force refresh if manually triggered or date changed
+    if (force_refresh or 
+        not sensor_manager.forecast_generated or 
+        sensor_manager.forecast_date != current_date):
+        
+        print(f"Clearing forecast cache - Date: {current_date}, Force: {force_refresh}")
+        sensor_manager.clear_forecast_cache()
+    
+    checkState() 
 
 def displayButtons():
 
@@ -740,7 +916,7 @@ def displayButtons():
     precipitationBtn = ctk.CTkButton(master = app, text = "Precipitation", command = lambda : updateState("Precipitation"))
     precipitationBtn.place(relx = 0.62, rely = 0.9, relwidth = 0.18, relheight = 0.07)
     
-    refreshBtn = ctk.CTkButton(master = app, text = "Refresh ⟳", command = lambda : updateState(state))
+    refreshBtn = ctk.CTkButton(master = app, text = "Refresh ⟳", command = lambda : updateState(state, force_refresh=True))
     refreshBtn.place(relx = 0.82, rely = 0.9, relwidth = 0.16, relheight = 0.07)
     
 
@@ -763,7 +939,15 @@ def checkState():
 
 def auto_refresh():
     """Auto refresh data every 30 seconds"""
-    updateState(state)
+    # Check if date has changed since last forecast generation
+    current_date = datetime.now().date()
+    date_changed = (sensor_manager.forecast_date is not None and 
+                   sensor_manager.forecast_date != current_date)
+    
+    if date_changed:
+        print(f"Date changed detected: {sensor_manager.forecast_date} -> {current_date}")
+    
+    updateState(state)  # This will automatically handle date changes
     app.after(30000, auto_refresh)  # Schedule next refresh in 30 seconds
 
 # Start the auto-refresh cycle
